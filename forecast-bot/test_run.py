@@ -1,0 +1,60 @@
+"""Offline tests for run.py's additions to the template (no network, no keys)."""
+import asyncio
+import os
+import unittest
+from unittest import mock
+
+os.environ.setdefault("METACULUS_TOKEN", "test-token")
+os.environ["FORECAST_MODELS"] = "openrouter/vendor/model-a, openrouter/vendor/model-b"
+os.environ["PREDICTIONS_PER_QUESTION"] = "5"
+os.environ.pop("ASKNEWS_CLIENT_ID", None)
+
+import run  # noqa: E402
+from forecasting_tools import BinaryQuestion  # noqa: E402
+
+QUESTION = BinaryQuestion(question_text="Will X happen?", page_url="https://example.org/q/1")
+
+
+class EnsembleBotTest(unittest.TestCase):
+    def setUp(self):
+        self.bot = run.build_bot(publish=False)
+
+    def test_predictions_rotate_across_models(self):
+        async def fake_parent_prediction(bot, question, research):
+            await asyncio.sleep(0)  # let other prediction tasks interleave
+            return bot.get_llm("default", "llm").model
+
+        async def go():
+            with mock.patch.object(run.FallTemplateBot2026, "_make_prediction", fake_parent_prediction):
+                return await asyncio.gather(*[self.bot._make_prediction(QUESTION, "") for _ in range(5)])
+
+        used = asyncio.run(go())
+        self.assertEqual(used.count("openrouter/vendor/model-a"), 3)
+        self.assertEqual(used.count("openrouter/vendor/model-b"), 2)
+
+    def test_non_default_purposes_unaffected(self):
+        self.assertEqual(self.bot.get_llm("parser", "string_name"), run.setting("PARSER_MODEL"))
+
+    def test_binary_median_is_clipped(self):
+        low = asyncio.run(self.bot._aggregate_predictions([0.001, 0.01, 0.02], QUESTION))
+        high = asyncio.run(self.bot._aggregate_predictions([0.995, 0.999, 0.99], QUESTION))
+        mid = asyncio.run(self.bot._aggregate_predictions([0.2, 0.4, 0.9], QUESTION))
+        self.assertAlmostEqual(low, 0.03)
+        self.assertAlmostEqual(high, 0.97)
+        self.assertAlmostEqual(mid, 0.4)
+
+    def test_research_failure_falls_back_instead_of_skipping(self):
+        researcher = self.bot.get_llm("researcher", "llm")
+        with mock.patch.object(type(researcher), "invoke", side_effect=RuntimeError("search down")):
+            text = asyncio.run(self.bot.run_research(QUESTION))
+        self.assertIn("No research available", text)
+
+    def test_research_success_is_labelled(self):
+        researcher = self.bot.get_llm("researcher", "llm")
+        with mock.patch.object(type(researcher), "invoke", mock.AsyncMock(return_value="Recent news: ...")):
+            text = asyncio.run(self.bot.run_research(QUESTION))
+        self.assertTrue(text.startswith("## Web research\nRecent news"))
+
+
+if __name__ == "__main__":
+    unittest.main()

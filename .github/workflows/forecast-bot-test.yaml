@@ -1,0 +1,56 @@
+name: Forecast bot - test
+
+# Manual smoke test. Runs the offline tests, checks the configured model IDs
+# exist on OpenRouter, then forecasts on Metaculus's unscored bot-testing-area.
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Post forecasts to the (unscored) bot-testing-area"
+        type: boolean
+        default: true
+
+concurrency:
+  group: forecast-bot-test
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: forecast-bot
+    env:
+      METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+      FORECAST_MODELS: ${{ vars.FORECAST_MODELS }}
+      RESEARCH_MODEL: ${{ vars.RESEARCH_MODEL }}
+      PARSER_MODEL: ${{ vars.PARSER_MODEL }}
+      REASONING_EFFORT: ${{ vars.REASONING_EFFORT }}
+      PREDICTIONS_PER_QUESTION: ${{ vars.PREDICTIONS_PER_QUESTION }}
+      MAX_COST_PER_RUN_USD: ${{ vars.MAX_COST_PER_RUN_USD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: py
+        with:
+          python-version: "3.11"
+      - uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - uses: actions/cache@v4
+        with:
+          path: forecast-bot/.venv
+          key: venv-${{ runner.os }}-${{ steps.py.outputs.python-version }}-${{ hashFiles('forecast-bot/poetry.lock') }}
+      - run: poetry install --no-interaction --no-root
+      - name: Offline unit tests
+        run: poetry run python -m unittest test_run -v
+      - name: Check model IDs on OpenRouter
+        run: poetry run python scripts/check_models.py
+      - name: Forecast on bot-testing-area
+        if: env.METACULUS_TOKEN != '' && env.OPENROUTER_API_KEY != ''
+        run: poetry run python run.py --mode test_questions ${{ inputs.publish && '' || '--dry-run' }}

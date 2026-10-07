@@ -1,0 +1,65 @@
+name: Forecast bot - tournament
+
+# Hourly, offset off the hour. Fall 2026 questions stay open for ~3 hours, so
+# hourly catches each one with retries to spare while staying inside the
+# private-repo Actions allowance (a 20-minute cron would exceed it).
+on:
+  schedule:
+    - cron: "13 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: forecast-bot-tournament
+  cancel-in-progress: false
+
+jobs:
+  forecast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    # Off until the owner sets the repository variable BOT_ENABLED=true (skipped
+    # jobs cost no Actions minutes); set it to anything else to pause the bot.
+    if: vars.BOT_ENABLED == 'true'
+    defaults:
+      run:
+        working-directory: forecast-bot
+    env:
+      METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+      FORECAST_MODELS: ${{ vars.FORECAST_MODELS }}
+      RESEARCH_MODEL: ${{ vars.RESEARCH_MODEL }}
+      PARSER_MODEL: ${{ vars.PARSER_MODEL }}
+      REASONING_EFFORT: ${{ vars.REASONING_EFFORT }}
+      PREDICTIONS_PER_QUESTION: ${{ vars.PREDICTIONS_PER_QUESTION }}
+      MAX_COST_PER_RUN_USD: ${{ vars.MAX_COST_PER_RUN_USD }}
+    steps:
+      - name: Skip until secrets are configured
+        id: ready
+        working-directory: .
+        run: |
+          if [ -n "$METACULUS_TOKEN" ] && [ -n "$OPENROUTER_API_KEY" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "METACULUS_TOKEN / OPENROUTER_API_KEY not set yet; nothing to do."; fi
+      - uses: actions/checkout@v4
+        if: steps.ready.outputs.ok == 'true'
+      - uses: actions/setup-python@v5
+        if: steps.ready.outputs.ok == 'true'
+        id: py
+        with:
+          python-version: "3.11"
+      - uses: snok/install-poetry@v1
+        if: steps.ready.outputs.ok == 'true'
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Restore cached venv
+        if: steps.ready.outputs.ok == 'true'
+        uses: actions/cache@v4
+        with:
+          path: forecast-bot/.venv
+          key: venv-${{ runner.os }}-${{ steps.py.outputs.python-version }}-${{ hashFiles('forecast-bot/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.ready.outputs.ok == 'true'
+        run: poetry install --no-interaction --no-root
+      - name: Forecast on open tournament and MiniBench questions
+        if: steps.ready.outputs.ok == 'true'
+        run: poetry run python run.py --mode tournament
