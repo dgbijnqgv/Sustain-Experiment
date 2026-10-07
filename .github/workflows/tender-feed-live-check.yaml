@@ -1,0 +1,37 @@
+name: Tender feed - live check
+
+# Manual integration check of the Apify Actor against the real portals.
+# The development container cannot reach them; GitHub's runners can.
+on:
+  workflow_dispatch:
+
+jobs:
+  live-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: actors/tender-feed
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: actors/tender-feed/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - name: Per-source live check
+        env:
+          SAM_API_KEY: ${{ secrets.SAM_API_KEY }}
+        run: node scripts/live-check.mjs
+      - name: End-to-end Actor run (local storage)
+        if: always()
+        run: |
+          mkdir -p storage/key_value_stores/default
+          echo '{"sources":["ted","uk-fts","uk-cf"],"lookbackDays":1,"maxItems":300}' > storage/key_value_stores/default/INPUT.json
+          node src/main.js
+          cat storage/key_value_stores/default/RUN_SUMMARY.json
+          echo "Second run (should be all unchanged):"
+          node src/main.js
+          cat storage/key_value_stores/default/RUN_SUMMARY.json

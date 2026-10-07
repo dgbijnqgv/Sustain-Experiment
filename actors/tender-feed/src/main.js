@@ -25,6 +25,9 @@ const {
     maxItems = 5000,
 } = input;
 
+// Flat per-run charge so quiet runs still cover their compute.
+await Actor.charge({ eventName: 'watch-run' });
+
 const since = new Date(Date.now() - lookbackDays * 86_400_000);
 const filters = { keywords, excludeKeywords, cpvPrefixes, naicsPrefixes, countries, minValue };
 

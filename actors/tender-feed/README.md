@@ -63,7 +63,7 @@ Bid teams, consultants and SMEs spend hours a week checking several procurement 
 
 ## Pricing
 
-Pay per event: **$0.01 per tender notice returned** (= $10 per 1,000). A typical daily niche watch returns 5–50 notices — roughly $1.50–$15 a month, far below the £350–£5,000 a year that tender-alert subscriptions charge. Apify's standard Actor start fee applies.
+Pay per event: **$0.03 per tender notice returned** plus **$0.02 per run**. A typical daily niche watch returns 5–50 notices a day — roughly $5–$45 a month — and you pay nothing for notices you have already seen. Set a maximum cost per run and the Actor stops cleanly at it.
 
 ## SAM.gov key
 

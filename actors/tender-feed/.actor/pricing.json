@@ -1,10 +1,15 @@
 {
-    "_comment": "Pay-per-event pricing applied via the Apify API by ops/publish.mjs. Apify's synthetic apify-actor-start event covers the first 5 seconds of compute.",
+    "_comment": "Pay-per-event pricing applied via the Apify API by ops/publish.mjs. 'watch-run' covers compute on runs that find nothing new (Apify zeroes profit for months where price does not cover usage).",
     "events": {
+        "watch-run": {
+            "eventTitle": "Watch run",
+            "eventDescription": "Charged once per run: checks all selected portals and updates your watch.",
+            "eventPriceUsd": 0.02
+        },
         "notice": {
             "eventTitle": "Tender notice returned",
             "eventDescription": "Charged once per new or changed tender notice delivered to your dataset. Unchanged notices are not returned or charged.",
-            "eventPriceUsd": 0.01
+            "eventPriceUsd": 0.03
         }
     }
 }
