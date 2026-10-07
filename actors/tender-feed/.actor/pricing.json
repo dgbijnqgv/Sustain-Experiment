@@ -1,0 +1,10 @@
+{
+    "_comment": "Pay-per-event pricing applied via the Apify API by ops/publish.mjs. Apify's synthetic apify-actor-start event covers the first 5 seconds of compute.",
+    "events": {
+        "notice": {
+            "eventTitle": "Tender notice returned",
+            "eventDescription": "Charged once per new or changed tender notice delivered to your dataset. Unchanged notices are not returned or charged.",
+            "eventPriceUsd": 0.01
+        }
+    }
+}

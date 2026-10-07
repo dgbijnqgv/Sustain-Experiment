@@ -1,0 +1,22 @@
+{
+  "name": "public-tender-feed",
+  "version": "0.1.0",
+  "description": "Normalized, de-duplicated public tender notices from TED (EU), UK Find a Tender, UK Contracts Finder and SAM.gov",
+  "main": "src/main.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "node --test test/*.test.js"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "apify": "^3.7.2"
+  },
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,89 @@
+{
+    "title": "Public Tender Feed input",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "sources": {
+            "title": "Sources",
+            "type": "array",
+            "description": "Which procurement portals to search. SAM.gov needs your own free API key (below).",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": ["ted", "uk-fts", "uk-cf", "sam"],
+                "enumTitles": ["EU – TED (Tenders Electronic Daily)", "UK – Find a Tender", "UK – Contracts Finder", "US – SAM.gov"]
+            },
+            "default": ["ted", "uk-fts", "uk-cf"],
+            "prefill": ["ted", "uk-fts", "uk-cf"]
+        },
+        "keywords": {
+            "title": "Keywords (any match)",
+            "type": "array",
+            "description": "Keep notices whose title, description or buyer contains any of these words. Leave empty for all.",
+            "editor": "stringList",
+            "prefill": ["software", "cloud"]
+        },
+        "excludeKeywords": {
+            "title": "Exclude keywords",
+            "type": "array",
+            "description": "Drop notices containing any of these words.",
+            "editor": "stringList"
+        },
+        "cpvPrefixes": {
+            "title": "CPV code prefixes (EU/UK)",
+            "type": "array",
+            "description": "e.g. 72 (IT services), 4800 (software packages), 45 (construction). A notice matches if any CPV or NAICS filter matches.",
+            "editor": "stringList"
+        },
+        "naicsPrefixes": {
+            "title": "NAICS code prefixes (US)",
+            "type": "array",
+            "description": "e.g. 5415 (computer systems design), 236 (building construction).",
+            "editor": "stringList"
+        },
+        "countries": {
+            "title": "Buyer countries (ISO-2)",
+            "type": "array",
+            "description": "e.g. DE, FR, GB, US. Leave empty for all.",
+            "editor": "stringList"
+        },
+        "minValue": {
+            "title": "Minimum estimated value",
+            "type": "integer",
+            "description": "In the notice's own currency. Notices without a published value are kept.",
+            "minimum": 0
+        },
+        "lookbackDays": {
+            "title": "Look back (days)",
+            "type": "integer",
+            "description": "How far back to search on each run. 3 is plenty for a daily schedule.",
+            "default": 3,
+            "minimum": 1,
+            "maximum": 60
+        },
+        "onlyChanges": {
+            "title": "Only new or changed notices",
+            "type": "boolean",
+            "description": "Skip notices this watch already returned unchanged. Turn off to get everything in the window. You are only charged for notices returned.",
+            "default": true
+        },
+        "watchName": {
+            "title": "Watch name",
+            "type": "string",
+            "description": "Separate watches (e.g. 'it-germany', 'construction-uk') each remember what they already sent you.",
+            "default": "default"
+        },
+        "samApiKey": {
+            "title": "SAM.gov API key",
+            "type": "string",
+            "description": "Free personal key from api.data.gov / your SAM.gov account. Only needed when 'US – SAM.gov' is selected.",
+            "isSecret": true
+        },
+        "maxItems": {
+            "title": "Max notices per run",
+            "type": "integer",
+            "default": 5000,
+            "minimum": 1
+        }
+    }
+}
