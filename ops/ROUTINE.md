@@ -1,54 +1,67 @@
 # Autonomous operator routine
 
-This file is the standing instruction for every scheduled session that runs
-the business. Read it fully, plus `PLAN.md` and `ops/LEDGER.md`, before acting.
+Standing instructions for every scheduled maintenance session. Read this file,
+`PLAN.md` and `ops/LEDGER.md` before acting.
+
+The development container can reach only GitHub and package registries. All
+live work therefore happens in GitHub Actions: trigger workflows and read their
+logs with the GitHub MCP tools (`actions_run_trigger`, `actions_list`,
+`get_job_logs`).
 
 ## Hard rules (never break these)
 
-1. **No spending.** Never buy, upgrade, or enter payment details. If a paid
-   upgrade would pay for itself, write a proposal under *Proposals* in
-   `ops/LEDGER.md`. The owner approves anything above $100 in total.
-2. **Legal data only.** Use only official public APIs or open-data feeds whose
-   terms allow commercial reuse. Never bypass logins, CAPTCHAs or rate limits.
-   Never collect personal data such as named contacts, emails or phone numbers.
-3. **No fake signals.** No fake reviews or ratings, and no runs from the owner's
-   account to inflate stats. Never post spam or promotional messages anywhere.
-4. **Quality over count.** Ship at most one new Actor per week. Only ship it
-   when it passes tests and a successful live run.
-5. **Leave a trail.** Every session ends by updating `ops/LEDGER.md`, then
-   committing and pushing to `claude/ai-revenue-generation-ume6vn`.
+1. **No spending.** Never buy, upgrade or enter payment details. Write
+   proposals under *Proposals* in the ledger. The owner approves anything above
+   $100 in total.
+2. **Metaculus: no human in the loop.** Never look at the bot's forecasts or
+   reasoning on questions that are still open, and never change code, prompts
+   or config because of them. Never rerun a question to get a different answer.
+   - Allowed inputs: CI errors and stack traces, cost totals, the
+     bot-testing-area, and questions that have already resolved.
+   - When reading tournament run logs, look only at errors and the cost and
+     count summary.
+3. **Legal data only.** Use official public APIs or open data that allow
+   commercial reuse. No login or CAPTCHA bypass, and no personal data.
+4. **No fake signals or spam.** No fake reviews, no self-runs to inflate Store
+   stats, and no promotional posting.
+5. **Leave a trail.** End every session by updating `ops/LEDGER.md`, then
+   commit and push to `claude/ai-revenue-generation-ume6vn`.
 
 ## Each session, in order
 
-1. **Preflight.** Check that `APIFY_TOKEN` is set and that
-   `curl -s https://api.apify.com/v2/users/me -H "Authorization: Bearer $APIFY_TOKEN"`
-   returns 200. If either check fails, record it in the ledger under *Blocked*,
-   push, and stop. Do not try to route around the network policy.
-2. **Live-validate each Actor locally** with a small input (`lookbackDays: 1`,
-   one source at a time). The first time this runs, replace the fixtures in
-   `test/` with trimmed real responses and fix every normalizer mismatch,
-   especially TED field names, UK notice URLs and Contracts Finder paging.
-3. **Health check in production.** For each Actor, `GET /v2/acts/{id}` (stats)
-   and `GET /v2/acts/{id}/runs?desc=1&limit=50`. Read the failed runs' logs.
-   Fix the root cause, run `npm test`, then `node ops/publish.mjs <dir>`.
-4. **Record metrics** in the ledger: total users, 30-day users, 30-day runs,
-   failure rate, and any earnings figure the API exposes. Compare them with the
-   last entry.
-5. **Improve the listing** when users are flat for 2+ weeks. Adjust the README
-   title, keywords and example input to match what buyers search for. Do not
-   change prices more than once a month, because Apify enforces a notice
-   period on price changes.
-6. **Build next**, but only if every live Actor is healthy. Take the top
-   unbuilt item from *Backlog* in `PLAN.md`. Copy the structure of
-   `actors/tender-feed` (normalizer, `ChangeTracker`, pay-per-event `pushData`,
-   tests, README listing). Publish it with `--public` once the live run is clean.
-7. **Ledger, commit, push.**
+1. **Forecast bot health.**
+   - List the recent runs of `forecast-bot-tournament.yaml`.
+   - If any failed, read only the failure output. Fix the root cause, run the
+     offline tests, push, then trigger `forecast-bot-test.yaml`.
+   - If runs are being skipped, setup is incomplete. Note that in the ledger
+     under *Blocked*.
+2. **Forecast bot cost.** Sum the "Run cost" lines across the week's runs and
+   compare the total with the approved budget. If the season total is on track
+   to pass it, set the per-run cap lower and note it in the ledger. Do not
+   pause the bot without the owner, because skipped questions score zero.
+3. **Forecast bot learning.** Do this only from resolved questions, about
+   monthly, once some have resolved. Write findings in the ledger, and change
+   code only on evidence from resolved questions.
+4. **Apify.** Once `APIFY_TOKEN` exists:
+   - Run the `Apify` workflow with task `stats` and record users, runs and
+     failures in the ledger.
+   - Run `tender-feed-live-check.yaml` weekly, and fix any source that broke.
+5. **Build.** Only when everything above is healthy, and at most 3 Actors in
+   total. Take the next item from the backlog below. Publish only after a clean
+   live check.
+6. **Ledger, commit, push.**
 
-## Pivot and stop criteria (evaluate monthly)
+## Backlog (Actors)
 
-- **Day 60:** if total Store users across all Actors are under 10, stop adding
-  new Actors. Spend the next month on improving listings and on the backlog
-  item with the strongest buyer evidence.
-- **Day 120:** if 30-day revenue is under $20, write a *Pivot* proposal in the
-  ledger and tell the owner. Do not keep spending their usage on a channel
-  that isn't working.
+1. Pharma/MedTech Signal Monitor: field-level diffs of ClinicalTrials.gov plus
+   openFDA approvals and recalls.
+2. Rulemaking Docket Tracker: Federal Register linked to Regulations.gov, with
+   comment deltas and deadlines.
+
+## Stop rules
+
+- **Day 60:** under 10 Actor users means no new Actors.
+- **Day 120:** under $20 of revenue means writing a pivot proposal and telling
+  the owner.
+- **Forecast bot:** if the average peer score on resolved questions is below 0
+  after 40 or more have resolved, propose stopping the model spend.

@@ -21,6 +21,7 @@ const OCDS_RELEASE = {
         value: { amount: 250000, currency: 'GBP' },
         tenderPeriod: { endDate: '2026-11-01T12:00:00Z' },
         items: [{ classification: { scheme: 'CPV', id: '72400000-4' } }],
+        lots: [{ id: '1', description: 'Lot 1: hosting for 5 years.' }],
     },
 };
 
@@ -60,6 +61,7 @@ test('OCDS release normalizes to common schema', () => {
     assert.deepEqual(n.value, { amount: 250000, currency: 'GBP' });
     assert.equal(n.deadlineAt, '2026-11-01T12:00:00.000Z');
     assert.match(n.summary, /Buyer: Leeds City Council \(GB\)/);
+    assert.equal(n.description, 'Provision of managed cloud hosting. Lot 1: hosting for 5 years.');
 });
 
 test('TED notice: English title, ISO-2 country, earliest lot deadline', () => {

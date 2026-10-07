@@ -1,0 +1,41 @@
+name: Apify
+
+# Publish an Actor or report Store stats. Runs in GitHub Actions because the
+# development container cannot reach api.apify.com.
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "stats, or publish"
+        type: choice
+        options: [stats, publish]
+        default: stats
+      actor_dir:
+        description: "Actor directory (publish only)"
+        default: actors/tender-feed
+      make_public:
+        description: "List on the Apify Store (publish only)"
+        type: boolean
+        default: false
+
+jobs:
+  apify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Stats
+        if: inputs.task == 'stats'
+        run: node ops/apify-stats.mjs
+      - name: Test before publishing
+        if: inputs.task == 'publish'
+        working-directory: ${{ inputs.actor_dir }}
+        run: npm ci && npm test
+      - name: Publish
+        if: inputs.task == 'publish'
+        run: node ops/publish.mjs "${{ inputs.actor_dir }}" ${{ inputs.make_public && '--public' || '' }}

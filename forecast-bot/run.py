@@ -43,7 +43,9 @@ logger = logging.getLogger(__name__)
 # models can be swapped without a code change. `scripts/check_models.py`
 # verifies the IDs against OpenRouter's catalogue.
 DEFAULTS = {
-    "FORECAST_MODELS": "openrouter/anthropic/claude-opus-5.5,openrouter/openai/gpt-5.5",
+    # Opus-only: in Summer 2026 the unmodified template ranked 24th on Claude
+    # Opus vs 35th on GPT-5.5, and Opus is the cheaper of the two on OpenRouter.
+    "FORECAST_MODELS": "openrouter/anthropic/claude-opus-5.5",
     "RESEARCH_MODEL": "openrouter/perplexity/sonar-reasoning-pro",
     "PARSER_MODEL": "openrouter/openai/gpt-5-mini",
     "REASONING_EFFORT": "high",
@@ -51,6 +53,9 @@ DEFAULTS = {
     "CLIP_MIN": "0.03",
     "CLIP_MAX": "0.97",
     "MAX_COST_PER_RUN_USD": "15",
+    # MiniBench pays ~$20 per 60-question round in expectation, below its API
+    # cost at this configuration, so it is opt-in.
+    "RUN_MINIBENCH": "false",
 }
 
 
@@ -166,10 +171,10 @@ if __name__ == "__main__":
         if mode == "test_questions":
             bot.skip_previously_forecasted_questions = False
             return await bot.forecast_on_tournament("bot-testing-area", return_exceptions=True)
-        # Main tournament first: it carries ~85% of the prize money.
-        main_reports = await bot.forecast_on_tournament(client.CURRENT_AI_COMPETITION_ID, return_exceptions=True)
-        mini_reports = await bot.forecast_on_tournament(client.CURRENT_MINIBENCH_ID, return_exceptions=True)
-        return main_reports + mini_reports
+        reports = await bot.forecast_on_tournament(client.CURRENT_AI_COMPETITION_ID, return_exceptions=True)
+        if setting("RUN_MINIBENCH").lower() == "true":
+            reports += await bot.forecast_on_tournament(client.CURRENT_MINIBENCH_ID, return_exceptions=True)
+        return reports
 
     with MonetaryCostManager(float(setting("MAX_COST_PER_RUN_USD"))) as cost:
         reports = asyncio.run(forecast_all())

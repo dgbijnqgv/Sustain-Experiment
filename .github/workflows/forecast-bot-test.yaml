@@ -32,6 +32,7 @@ jobs:
       REASONING_EFFORT: ${{ vars.REASONING_EFFORT }}
       PREDICTIONS_PER_QUESTION: ${{ vars.PREDICTIONS_PER_QUESTION }}
       MAX_COST_PER_RUN_USD: ${{ vars.MAX_COST_PER_RUN_USD }}
+      RUN_MINIBENCH: ${{ vars.RUN_MINIBENCH }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

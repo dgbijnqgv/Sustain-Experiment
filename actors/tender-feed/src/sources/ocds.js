@@ -46,7 +46,9 @@ export function normalizeOcdsRelease(source, r, url) {
         sourceId: r.ocid ?? r.id,
         url,
         title: t.title ?? r.title,
-        description: t.description,
+        // Find a Tender often puts only a one-line summary in tender.description
+        // and the substance in the lots.
+        description: [t.description, ...(t.lots ?? []).map((l) => l.description)].filter(Boolean).join('\n\n'),
         buyerName: buyerParty.name ?? r.buyer?.name,
         country: countryCode(buyerParty.address?.countryName) ?? 'GB',
         noticeType: (r.tag ?? []).join(','),

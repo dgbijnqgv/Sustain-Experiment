@@ -1,126 +1,132 @@
-# Plan: an AI-run business that pays for its own subscription
+# Plan: an AI-run setup that pays for its own subscription
 
-**Goal:** $200/month net, with the owner involved only for one-time setup and
+**Goal:** $200 a month net. The owner is involved only for one-time setup and
 for approving spend above $100.
 
-## What an agent can and can't do here
+**Evidence base:** `reports/AI agents earning real money.md`, built from seven
+research tracks; the notes are in `research_notes/`.
 
-- **Can:** write, test and maintain code, research, and run on a schedule (Claude Code routines).
-- **Can't:** open accounts that need identity checks, receive money, solve
-  CAPTCHAs, or spend money. Those tie to the owner's identity, so they are the
-  owner's one-time steps.
-- **The real bottleneck is distribution, not building.** Public experiments
-  where agents ran their own businesses show the same thing: the agent can
-  build the product, but nobody finds it. Publishing 100+ articles brought
-  near-zero traffic, and automated outreach gets flagged as spam.
+## What the research changed
 
-## Options considered
+- **Nobody has done this yet.** As of October 2026 there is no verified case
+  of a largely autonomous agent netting $200 a month from customers it found
+  itself.
+  - Agent-run businesses lost money or earned trivially: Project Vend, the
+    WSJ's Claudius, Andon Market, Moneylab ($5 from outside customers) and a
+    string of $0–$54 build-and-sell experiments.
+  - The big numbers came from human audiences, corporate teams reviewing
+    every report, or fraud.
+- **Agents fail on demand, not building.** The money is where buyers or
+  prize money already exist and machine-checkable work is what gets paid.
 
-| Option | Verdict |
-|---|---|
-| SEO/content site, ads, affiliate | ✗ Months to traffic, and Google penalizes scaled AI content |
-| Gumroad or Stripe digital products | ✗ No built-in buyers, so it needs marketing an agent can't do without spamming |
-| Open-source bounties (Algora etc.) | ✗ Saturated by agents (30+ attempts on $50 issues) and a burden on maintainers |
-| Freelance platforms | ✗ Their terms forbid bots, and the work needs a human |
-| Trading | ✗ Speculation, not income |
-| **Apify Store pay-per-event Actors** | ✓ **Chosen.** Details below. |
+## Channels
 
-### Why Apify
+Ranked by the research. Evidence grades come from the report.
 
-- **The marketplace brings the buyers.** Apify Store has its own search and SEO, and AI agents call Actors through Apify's MCP server.
-- **Revenue depends on code, not marketing.** Developers keep 80% of revenue minus compute.
-- **It's built for an agent.** The product is pure code, and the ongoing work is fixing breakage, which an agent does well.
-- **No upfront cost.** The free plan covers development, and PayPal payouts start at $20.
+### 1. Metaculus FutureEval forecasting bot (primary, `forecast-bot/`)
 
-### Choosing what to sell
+**Evidence: A−.** This is the one venue whose rules *require* no human in the
+loop, and prize tables are published.
 
-Single-API scrapers are oversupplied. EDGAR, SAM.gov, openFDA and
-ClinicalTrials.gov already have 5 to 10+ near-identical Actors, often
-agent-made, with 2 to 36 users each. The opening is in **cross-source joins
-plus change detection**, sold to buyers who already pay real money:
+- **Prizes:**
+  - Fall 2026 has a $50k pool. It opened 28 Sep, forecasting ends about
+    6 Jan 2027, and cash arrives around Feb–Apr 2027.
+  - Prizes are paid in proportion to score squared, with a $50 floor. 30–41
+    bots were paid per recent season.
+  - Metaculus's unmodified template running Claude Opus placed 24th of 284 in
+    Summer 2026, a score worth about $842.
+- **Expected value:**
+  - Central estimate for this season: $300–$600 (range $0–$1,000).
+  - API cost: about $130–$250 for the rest of the season without donated
+    credits, near $0 with them.
+- **Built:**
+  - Metaculus's official template, unmodified, plus `run.py`. That file adds
+    a flagship-model ensemble, two research sources, clipping of extreme
+    probabilities and a per-run cost cap.
+  - Runs hourly on GitHub Actions.
+  - Offline tests pass in CI, and all model IDs are verified on OpenRouter.
+- **Timing:** about 12–15% of the expected prize is lost for each week of
+  delay, so this goes first.
 
-- Tender alerts cost £350 to £5,000 a year.
-- GovCon intelligence costs $500 to $100,000+ a year.
+### 2. Apify pay-per-event Actors (secondary, `actors/`)
 
-## Product line
+**Evidence: B−.** Apify is the only developer marketplace with official
+evidence that many independent developers earn $200+ a month. Earnings are
+heavily concentrated, and new Actors start at zero users.
 
-1. **Public Tender Feed** (built in session 1) covers EU TED, UK Find a Tender,
-   UK Contracts Finder and SAM.gov in one schema. It returns only new or changed
-   notices for $0.01 each.
-   - No existing Actor covers all four portals.
-   - Buyers are bid consultants and SMEs.
+- **Built:** the tender feed. It covers EU TED, UK Find a Tender and UK
+  Contracts Finder, plus SAM.gov with the user's own key.
+  - Validated live in CI on 2026-10-07, with 100% of notices normalized
+    correctly.
+  - Repriced to $0.03 per notice plus $0.02 per run, before first publish.
+- **Cap:** at most 3 Actors until one has paying users. Three reliable Actors
+  out-earn ten unmaintained ones.
+- **Expectation:** $0–$50 a month through January, $20–$250 a month by about
+  April 2027.
 
-The backlog below is built in order, at most one per week:
+### Excluded, with reasons in the report
 
-2. **Pharma/MedTech Signal Monitor** gives field-level diffs from ClinicalTrials.gov, openFDA 510(k)/PMA and recalls, and FDA notices in the Federal Register. Buyers are biotech investors and competitive-intelligence teams.
-3. **Rulemaking Docket Tracker** links Federal Register rules to Regulations.gov dockets, with comment-count deltas and deadline alerts.
-4. **GovCon Vendor Dossier** is keyed by UEI and combines SAM registration status and exclusions, USAspending award history and SBIR history.
-5. **Entity ID Crosswalk** maps LEI to SEC CIK to UEI, using GLEIF plus SEC data.
+- Security bounties
+- Trading and prediction markets
+- Upwork and Fiverr
+- AI content: SEO, YouTube, KDP, Medium, music
+- Etsy, print-on-demand and stock images
+- Standalone x402 or MCP listings
+- Agent task boards
+- AI app stores
+- Code bounties, unless a maintainer explicitly invites them
 
-Avoid these sources:
+## Odds (honest)
 
-- **OpenCorporates:** its free data is share-alike.
-- **FRED:** third-party series carry copyright restrictions.
-- **Any personal-data sources.**
+- **Combined, by mid-2027:** about a 1-in-4 chance of a sustained $200 a month.
+- **Before February 2027:** income will be near $0, whatever happens.
 
-## Economics (honest)
+Judge progress by leading indicators:
 
-Net income is 80% of revenue minus compute, so **$200 net needs about $260
-gross a month**. At $0.01 per notice, that is about 26,000 notices a month.
+- The bot's average peer score on resolved questions should be at least +5 at
+  90% or more coverage.
+- The Actors' 30-day user counts.
 
-A typical paying user runs one daily watch and receives 300 to 1,500 notices a
-month, so the target needs **about 20 to 80 active paying users across the
-portfolio**. For comparison, the best SAM.gov Actor found had 36 users in total.
+**Stop rules:**
 
-| Horizon | Realistic range | Odds of covering $200/mo |
-|---|---|---|
-| Month 1 | $0 (listing, validation, first users) | ~0% |
-| Months 2–3 | $0–$50/mo | ~5% |
-| Month 6, 4–5 Actors | $20–$250/mo | ~20–30% |
-
-These odds are a judgement, not a forecast; Apify does not publish earnings
-distributions. If the numbers aren't there by day 120, the routine stops and
-proposes a pivot rather than burning more usage (see `ops/ROUTINE.md`).
+- **Day 60:** fewer than 10 Actor users means no new Actors.
+- **Day 120:** under $20 of revenue means a pivot proposal to the owner.
 
 ## Budget
 
-- **Planned cash spend now: $0.**
-- **Possible later ask:** Apify's paid plan, if canary and test runs outgrow
-  the free credits. I'll bring numbers before asking.
+| Item | Cost | Status |
+|---|---|---|
+| GitHub Actions | $0 (private-repo allowance; hourly cron sized to fit) | — |
+| Apify | $0 (free plan) | — |
+| Forecast-bot model spend, if Metaculus credits don't arrive | ~$130–$250 for the Fall season | **Needs owner approval (>$100).** Start with up to $100 on OpenRouter with a key spending limit; top up only after approval. |
 
-## How it runs on its own
+## Owner's one-time setup
 
-A scheduled routine starts a fresh Claude Code session twice a week. Each
-session follows `ops/ROUTINE.md`:
+Everything runs in GitHub, so this container's network settings no longer
+matter.
 
-1. Validate and fix the live Actors.
-2. Record metrics.
-3. Improve the listings.
-4. Build the next backlog item.
-5. Commit the ledger.
+**A. Forecasting bot (about 30 minutes; do this first)**
 
-Progress is visible in `ops/LEDGER.md` on this branch.
+1. At https://www.metaculus.com/futureeval/participate/, create a Metaculus
+   account, then a **bot account**, then its **token**.
+2. Fill in the first section of the participation form, and request LLM
+   credits there: https://forms.gle/aQdYMq9Pisrf1v7d8
+3. *(Optional, free)* Email contact@asknews.app for AskNews builder access,
+   1,000 calls a month.
+4. Get an **OpenRouter API key**: either the donated-credit key, or your own
+   at openrouter.ai with up to $100 of credit and a key spending limit.
+5. In GitHub, open this repo → Settings → Secrets and variables → Actions.
+   - Under **Secrets**, add `METACULUS_TOKEN`, `OPENROUTER_API_KEY`, and
+     optionally `ASKNEWS_CLIENT_ID` and `ASKNEWS_SECRET`.
+   - Under **Variables**, add `BOT_ENABLED` = `true`.
+6. Reply "bot ready". I then:
+   - run the test workflow against Metaculus's unscored test area;
+   - confirm the hourly tournament runs;
+   - start the twice-weekly maintenance routine.
 
-## Owner's one-time setup (about 20 minutes)
+**B. Apify (about 20 minutes)**
 
-1. **Create an Apify account** at apify.com. Then open Settings → Integrations
-   → API tokens, and create a token.
-2. **Set up monetization.** In Apify Console → Development → Publication /
-   Monetization, add your payout details (PayPal or bank) and the tax form. Only
-   you can do this, because it is tied to your identity.
-3. **Add the token to this cloud environment.** Open the environment menu in
-   the session title bar → Edit, and add the environment variable `APIFY_TOKEN`.
-   Don't paste the token into chat.
-4. **Allow network access** in the same Edit screen. Either choose full network
-   access, or add these allowed domains:
-   - `api.apify.com`, `apify.com`, `console.apify.com`
-   - `api.ted.europa.eu`, `ted.europa.eu`
-   - `www.find-tender.service.gov.uk`, `www.contractsfinder.service.gov.uk`
-   - `api.sam.gov`
-   - Later Actors also need `clinicaltrials.gov`, `api.fda.gov`, `www.federalregister.gov`, `api.regulations.gov`, `api.usaspending.gov`, `api.gleif.org`, `data.sec.gov`, `www.sec.gov`
-5. *(Optional)* Get a free SAM.gov API key and add it as `SAM_API_KEY`. It is
-   only used to test the SAM.gov source; customers supply their own key.
-6. Reply **"done"**. I'll then:
-   - validate against live data,
-   - publish the first Actor,
-   - create the twice-weekly routine.
+1. Create an apify.com account.
+2. Set up monetization: payout details (PayPal or bank) and the tax form.
+3. Create an API token, and add it as the GitHub secret `APIFY_TOKEN`.
+4. Reply "apify ready". I publish through the `Apify` workflow.
