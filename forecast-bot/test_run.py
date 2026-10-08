@@ -43,6 +43,12 @@ class EnsembleBotTest(unittest.TestCase):
         self.assertEqual(used.count("openrouter/vendor/model-a"), 3)
         self.assertEqual(used.count("openrouter/vendor/model-b"), 2)
 
+    def test_minibench_can_use_its_own_models(self):
+        self.bot.use_models("openrouter/vendor/cheap")
+        self.assertEqual([llm.model for llm in self.bot._forecasters], ["openrouter/vendor/cheap"])
+        self.bot.use_models(None)  # back to FORECAST_MODELS
+        self.assertEqual(len(self.bot._forecasters), 2)
+
     def test_subscription_token_selects_cli_backend(self):
         with mock.patch.dict(os.environ, {"CLAUDE_CODE_OAUTH_TOKEN": "tok", "FORECAST_MODELS": "", "PARSER_MODEL": ""}):
             self.assertEqual(run.setting("FORECAST_MODELS"), "claude-code/opus")

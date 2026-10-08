@@ -165,6 +165,28 @@ GitHub emails you automatically when a scheduled run fails.
 
 ## 8. Your one-time setup (about 45 minutes)
 
+**Fastest way:** on your own computer, clone this repo and run
+`bash ops/setup.sh` (needs the GitHub CLI `gh` and Node.js). It does every
+scriptable step itself: visibility, secrets, variables, a live test on the
+practice area, and switching the bot on only after the test passes. It stops
+only at browser pages that need you, opens each one, and checks the trigger at
+the end. Tokens are typed into hidden prompts that send them straight to
+GitHub, never into chat. Re-running it skips finished steps. The manual steps
+below are the same process by hand.
+
+**Model choice** (asked by the script):
+
+| Plan | Main tournament | MiniBench | Credits used (API-equivalent) |
+|---|---|---|---|
+| Max 20x | Opus 5.5 | Opus 5.5 | ~$132–187 of $200/month |
+| Max 5x | Opus 5.5 | Sonnet 5.5 (`MINIBENCH_FORECAST_MODELS`) | ~$105–150 against $100/month; the overflow (~$5–50) runs on the subscription token |
+
+Opus 5.5 costs $4/$20 per million tokens, Sonnet 5.5 $2/$10, Haiku 5.5
+$0.10/$0.50. On the plan's included credits the price is not cash, so the
+strongest model wins. Prize money grows with the square of the score, so a
+model that scores 10% lower earns roughly 20% less. Haiku stays as the parser
+only: small models have scored below zero in past seasons, which pays $0.
+
 **A. Accounts and tokens (25 min)**
 1. **Metaculus:** at https://www.metaculus.com/futureeval/participate/, create
    an account, then a **bot account** and its **token**. Fill in the first

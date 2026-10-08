@@ -96,6 +96,10 @@ def _shared_defaults() -> dict[str, str]:
         # starting ~January). Empty means forecasting-tools' built-in current IDs.
         "TOURNAMENT_ID": "",
         "MINIBENCH_ID": "",
+        # Optional cheaper ensemble for MiniBench (e.g. "claude-code/sonnet" so
+        # the main tournament on Opus plus MiniBench fit Max 5x's $100 of API
+        # credits). Empty means MiniBench uses FORECAST_MODELS.
+        "MINIBENCH_FORECAST_MODELS": "",
     }
 
 
@@ -117,12 +121,12 @@ def make_llm(model: str, *, web_tools: bool = False, **kwargs) -> GeneralLlm:
     return GeneralLlm(model=model, **kwargs)
 
 
-def forecaster_llms() -> list[GeneralLlm]:
+def forecaster_llms(models: str | None = None) -> list[GeneralLlm]:
     effort = setting("REASONING_EFFORT")
     kwargs = {} if effort.lower() == "none" else {"reasoning_effort": effort}
     return [
         make_llm(m.strip(), timeout=300, allowed_tries=3, **kwargs)
-        for m in setting("FORECAST_MODELS").split(",")
+        for m in (models or setting("FORECAST_MODELS")).split(",")
         if m.strip()
     ]
 
@@ -141,9 +145,13 @@ class EnsembleBot(FallTemplateBot2026):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._forecasters = forecaster_llms()
-        self._rotation = itertools.cycle(self._forecasters)
+        self.use_models(None)
         self._clip = (float(setting("CLIP_MIN")), float(setting("CLIP_MAX")))
+
+    def use_models(self, models: str | None) -> None:
+        """Switch the forecaster ensemble; call only between tournaments."""
+        self._forecasters = forecaster_llms(models)
+        self._rotation = itertools.cycle(self._forecasters)
 
     def get_llm(self, purpose="default", guarantee_type=None):
         chosen = _forecaster.get()
@@ -302,6 +310,7 @@ if __name__ == "__main__":
             return await bot.forecast_on_tournament("bot-testing-area", return_exceptions=True)
         reports = await bot.forecast_on_tournament(main_id, return_exceptions=True)
         if setting("RUN_MINIBENCH").lower() == "true":
+            bot.use_models(setting("MINIBENCH_FORECAST_MODELS") or None)
             reports += await bot.forecast_on_tournament(mini_id, return_exceptions=True)
         return reports
 
