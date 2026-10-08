@@ -1,0 +1,35 @@
+name: Fetch page
+
+# Reads a public web page the session container's network can't reach, and
+# prints its text and links to the log.
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Page to read
+        required: true
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fetch
+        env:
+          URL: ${{ inputs.url }}
+        run: |
+          curl -sSL -A "Mozilla/5.0" --max-time 30 "$URL" -o page.html -w 'HTTP %{http_code} final=%{url_effective}\n'
+          python3 - <<'PY'
+          import html, re
+          s = open("page.html", encoding="utf-8", errors="replace").read()
+          print("TITLE:", re.findall(r"<title[^>]*>(.*?)</title>", s, re.S)[:1])
+          for m in re.findall(r'<meta[^>]+(?:name|property)="([^"]+)"[^>]+content="([^"]*)"', s):
+              print("META:", m)
+          for href in sorted(set(re.findall(r'href="([^"#]+)"', s))):
+              print("LINK:", href)
+          for src in sorted(set(re.findall(r'<script[^>]+src="([^"]+)"', s))):
+              print("SCRIPT:", src)
+          body = re.sub(r"(?is)<(script|style|noscript)[^>]*>.*?</\1>", " ", s)
+          text = html.unescape(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", body))).strip()
+          print("TEXT:", text[:8000])
+          PY
