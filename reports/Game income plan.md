@@ -117,3 +117,25 @@ shiteven.fun itself stays as it is.
 - Rooms are empty at launch.
 - Ad rates in the research are old or anecdotal.
 - Income decays without content updates.
+
+### Owner decision (2026-10-08): the name stays "Shiteven" everywhere
+
+There will be no renamed portal build, which makes Poki and Playwire/Freestar
+unavailable. The title probably rules out CrazyGames too: it requires PEGI 12, and no
+listed game there or on Poki has a swear word in its title. A submission with the
+name kept costs only time, so it is worth trying if the owner accepts emote-only chat
+and no slots in that build.
+
+Revised order:
+1. **Own domain.** Add supporter perks and cosmetics through Ko-fi or Stripe; these are
+   open as-is. Then add ads (AdSense with restricted serving, or AdinPlay) once traffic
+   justifies them.
+2. **Traffic.** The name is a meme asset. Use short gameplay clips (the game already
+   records sessions), Reddit's web-game communities, iogames.space, and itch.io and
+   Newgrounds listings that link to the site. The owner posts; nothing is automated.
+3. **Compliance before ads or payments.** Add an age screen, preset chat for
+   under-13s, and an updated privacy policy.
+4. **Optionally, a CrazyGames submission with the name kept.**
+
+Expected income is lower than the portal plan and depends on current traffic, which
+is still unknown.
