@@ -17,7 +17,7 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Blocked
 
-- Waiting on the owner's one-time setup (PLAN.md §8).
+- **Owner action:** one-time setup (PLAN.md §8) is still pending. As of 2026-10-08 08:58 UTC, tournament runs are skipped because `BOT_ENABLED` is unset.
 
 ## Proposals
 
@@ -27,6 +27,8 @@ Append-only log kept by the operator sessions, newest first.
   (PLAN.md §1).
 
 ## Log
+
+- 2026-10-08 08:58 UTC check-in: tournament runs #1 and #2 both `skipped` (`BOT_ENABLED` unset); setup still pending, stopped per ROUTINE step 1.
 
 ### 2026-10-08 (overnight): plan v4
 - **Research:** six overnight tracks plus an independent red-team review:
