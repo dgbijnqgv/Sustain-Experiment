@@ -1,0 +1,28 @@
+name: Hash live files
+
+# Prints the SHA-256 of each file a public site serves, so a session can check
+# a deployed site against its source repository without server access.
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: Site root, e.g. https://example.com
+        required: true
+      paths:
+        description: Space-separated paths relative to the root
+        required: true
+
+jobs:
+  hash:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Hash
+        env:
+          BASE: ${{ inputs.base }}
+          PATHS: ${{ inputs.paths }}
+        run: |
+          for p in $PATHS; do
+            code="$(curl -sSL -A "Mozilla/5.0" --max-time 20 -o f "$BASE/$p" -w '%{http_code}' || echo ERR)"
+            echo "$code $(sha256sum f | cut -c1-16) $p"
+          done
