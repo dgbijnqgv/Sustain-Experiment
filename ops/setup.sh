@@ -102,24 +102,36 @@ fi
 say "  RUN_MINIBENCH=$MINIBENCH, plan=Max ${PLAN}x."
 
 bold "6/7  Live test on Metaculus's unscored practice area"
-say "  Starting the test workflow (takes ~5-15 minutes)..."
-STARTED="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-gh workflow run forecast-bot-test.yaml -R "$REPO" --ref "$BRANCH" -f publish=true
-RUN_ID=""
-for _ in $(seq 20); do
-  sleep 5
-  RUN_ID="$(gh run list -R "$REPO" --workflow forecast-bot-test.yaml --event workflow_dispatch -L 5 \
-    --json databaseId,createdAt -q ".[] | select(.createdAt >= \"$STARTED\") | .databaseId" | head -n 1)"
-  [ -n "$RUN_ID" ] && break
-done
-[ -n "$RUN_ID" ] || { say "  The test run didn't appear; check the Actions tab, then re-run this script."; exit 1; }
-if gh run watch "$RUN_ID" -R "$REPO" --exit-status --interval 30 >/dev/null; then
-  say "  Test passed. Turning the tournament bot on."
-  gh variable set BOT_ENABLED -R "$REPO" --body true
+if [ "$(gh variable get BOT_ENABLED -R "$REPO" 2>/dev/null || true)" = "true" ]; then
+  say "  Bot already tested and switched on; skipping."
 else
-  say "  Test FAILED. The bot stays off. Details: gh run view $RUN_ID -R $REPO --log-failed"
-  say "  Tell Claude in the session; it can read the run and fix it."
-  exit 1
+  say "  Starting the test workflow (takes ~10 minutes)..."
+  STARTED="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  gh workflow run forecast-bot-test.yaml -R "$REPO" --ref "$BRANCH" -f publish=true
+  RUN_ID=""
+  for _ in $(seq 20); do
+    sleep 5
+    RUN_ID="$(gh run list -R "$REPO" --workflow forecast-bot-test.yaml --event workflow_dispatch -L 5 \
+      --json databaseId,createdAt -q ".[] | select(.createdAt >= \"$STARTED\") | .databaseId" 2>/dev/null | head -n 1 || true)"
+    [ -n "$RUN_ID" ] && break
+  done
+  [ -n "$RUN_ID" ] || { say "  The test run didn't appear; check the Actions tab, then re-run this script."; exit 1; }
+  # Poll instead of `gh run watch`, so a dropped connection is just retried.
+  RESULT=""
+  until [ -n "$RESULT" ]; do
+    sleep 30
+    STATE="$(gh run view "$RUN_ID" -R "$REPO" --json status,conclusion -q '.status + " " + .conclusion' 2>/dev/null || true)"
+    case "$STATE" in completed\ *) RESULT="${STATE#completed }";; *) printf '.';; esac
+  done
+  echo
+  if [ "$RESULT" = "success" ]; then
+    say "  Test passed. Turning the tournament bot on."
+    gh variable set BOT_ENABLED -R "$REPO" --body true
+  else
+    say "  Test FAILED ($RESULT). The bot stays off. Details: gh run view $RUN_ID -R $REPO --log-failed"
+    say "  Tell Claude in the session; it can read the run and fix it."
+    exit 1
+  fi
 fi
 
 bold "7/7  Reliable trigger (every 15 minutes)"
