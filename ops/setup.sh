@@ -71,10 +71,10 @@ if has_secret METACULUS_TOKEN; then say "  Already set."; else
   open_url "https://www.metaculus.com/futureeval/participate/"
   pause "  Got the bot token copied? Press Enter only (paste it at the NEXT prompt)..."
   set_secret METACULUS_TOKEN
+  say "  Also fill in the first section of the participation form (required to compete)."
+  open_url "https://forms.gle/aQdYMq9Pisrf1v7d8"
+  pause "  Press Enter when the form is submitted..."
 fi
-say "  Also fill in the first section of the participation form (tick the credits request)."
-open_url "https://forms.gle/aQdYMq9Pisrf1v7d8"
-pause "  Press Enter when the form is submitted (or to do it later)..."
 
 bold "4/7  Claude credentials"
 if has_secret ANTHROPIC_API_KEY; then say "  API key already set."; else
