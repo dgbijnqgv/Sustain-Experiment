@@ -57,7 +57,7 @@ class CliLlm(GeneralLlm):
             return cmd
         cmd = [os.getenv("CODEX_BIN", "codex"), "exec", "--skip-git-repo-check", "--sandbox", "read-only",
                "--model", self.cli_model, "--output-last-message", output_file]
-        cmd += shlex.split(os.getenv("CODEX_WEB_ARGS", "--search") if self.web_tools else "")
+        cmd += shlex.split(os.getenv("CODEX_WEB_ARGS", '-c web_search="live"') if self.web_tools else "")
         cmd.append("-")  # read the prompt from stdin
         return cmd
 
