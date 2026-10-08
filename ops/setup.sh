@@ -32,7 +32,7 @@ open_url() {
 }
 has_secret() { gh secret list -R "$REPO" --json name -q '.[].name' | grep -qx "$1"; }
 set_secret() {
-  say "  Paste the value when asked (input is hidden; it goes straight to GitHub)."
+  say "  Now paste it at \"? Paste your secret\" and press Enter (nothing shows as you paste)."
   until gh secret set "$1" -R "$REPO"; do say "  That didn't work; try again."; done
 }
 
@@ -69,7 +69,7 @@ bold "3/7  Metaculus bot token"
 if has_secret METACULUS_TOKEN; then say "  Already set."; else
   say "  In the browser: log in or sign up, create a BOT account, and copy its token."
   open_url "https://www.metaculus.com/futureeval/participate/"
-  pause "  Press Enter once you have the bot token copied..."
+  pause "  Got the bot token copied? Press Enter only (paste it at the NEXT prompt)..."
   set_secret METACULUS_TOKEN
 fi
 say "  Also fill in the first section of the participation form (tick the credits request)."
