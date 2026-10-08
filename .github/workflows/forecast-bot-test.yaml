@@ -109,4 +109,4 @@ jobs:
           PREDICTIONS_PER_QUESTION: ${{ vars.PREDICTIONS_PER_QUESTION }}
           TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
           MINIBENCH_ID: ${{ vars.MINIBENCH_ID }}
-        run: poetry run python run.py --mode test_questions ${{ inputs.publish && '' || '--dry-run' }}
+        run: poetry run python run.py --mode test_questions ${{ !inputs.publish && '--dry-run' || '' }}

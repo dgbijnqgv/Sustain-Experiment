@@ -43,6 +43,25 @@ class EnsembleBotTest(unittest.TestCase):
         self.assertEqual(used.count("openrouter/vendor/model-a"), 3)
         self.assertEqual(used.count("openrouter/vendor/model-b"), 2)
 
+    def test_out_of_range_numeric_answer_is_retried_with_the_range(self):
+        prompts = []
+
+        async def flaky(question, prompt):
+            prompts.append(prompt)
+            if len(prompts) == 1:
+                raise ValueError("Some declared percentiles are far exceeding the bounds of the question.")
+            return "ok"
+
+        q = mock.Mock(unit_of_measure="", lower_bound=0.095, upper_bound=0.805)
+        self.assertEqual(asyncio.run(run.EnsembleBot._retry_out_of_range(flaky, q, "P")), "ok")
+        self.assertIn("between 0.095 and 0.805", prompts[1])
+
+        async def broken(question, prompt):
+            raise ValueError("something else")
+
+        with self.assertRaises(ValueError):
+            asyncio.run(run.EnsembleBot._retry_out_of_range(broken, q, "P"))
+
     def test_minibench_can_use_its_own_models(self):
         self.bot.use_models("openrouter/vendor/cheap")
         self.assertEqual([llm.model for llm in self.bot._forecasters], ["openrouter/vendor/cheap"])

@@ -165,6 +165,32 @@ class EnsembleBot(FallTemplateBot2026):
         _forecaster.set(next(self._rotation))
         return await super()._make_prediction(question, research)
 
+    # Numeric and date answers sometimes come back on the wrong scale (e.g.
+    # percent where the question wants a fraction), which the library rejects
+    # as "far exceeding the bounds". Ask that forecaster once more, stating the
+    # range explicitly, instead of losing its prediction.
+    async def _numeric_prompt_to_forecast(self, question, prompt):
+        return await self._retry_out_of_range(super()._numeric_prompt_to_forecast, question, prompt)
+
+    async def _date_prompt_to_forecast(self, question, prompt):
+        return await self._retry_out_of_range(super()._date_prompt_to_forecast, question, prompt)
+
+    @staticmethod
+    async def _retry_out_of_range(forecast, question, prompt):
+        try:
+            return await forecast(question, prompt)
+        except ValueError as e:  # pydantic's ValidationError is a ValueError
+            if "bounds" not in str(e):
+                raise
+            unit = getattr(question, "unit_of_measure", None) or "as defined in the question"
+            note = (
+                "\n\nIMPORTANT: an earlier answer to this question was rejected because its percentiles fell far "
+                f"outside the question's range. Give every percentile in the question's own units ({unit}), "
+                f"roughly between {question.lower_bound} and {question.upper_bound}. Check whether the question "
+                "expects a fraction or a percentage, a count or a rate, and answer on its scale."
+            )
+            return await forecast(question, prompt + note)
+
     async def run_research(self, question: MetaculusQuestion) -> str:
         async with self._concurrency_limiter:
             tasks = {}
