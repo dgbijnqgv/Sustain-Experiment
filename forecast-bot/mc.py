@@ -36,6 +36,10 @@ from datetime import datetime, timezone
 BINARY_CLIP = (0.03, 0.97)
 MC_FLOOR = 0.01
 TOURNAMENTS = {"test": "bot-testing-area"}
+# The season's main tournament. forecasting-tools 0.2.92 still points
+# CURRENT_AI_COMPETITION_ID at Summer 2026, so name the season here. Update it
+# each season (next: Spring 2027, ~January), or set the TOURNAMENT_ID variable.
+SEASON_TOURNAMENT = "fall-futureeval-2026"
 
 
 def tournament_id(name: str):
@@ -45,7 +49,7 @@ def tournament_id(name: str):
 
     # Overrides for when a new season starts before forecasting-tools updates.
     if name == "main":
-        return os.getenv("TOURNAMENT_ID") or MetaculusClient.CURRENT_AI_COMPETITION_ID
+        return os.getenv("TOURNAMENT_ID") or SEASON_TOURNAMENT
     if name == "minibench":
         return os.getenv("MINIBENCH_ID") or MetaculusClient.CURRENT_MINIBENCH_ID
     return TOURNAMENTS[name]

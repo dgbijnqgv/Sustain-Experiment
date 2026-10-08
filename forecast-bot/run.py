@@ -28,6 +28,7 @@ from typing import Literal
 
 from main import FallTemplateBot2026  # also loads .env and silences noisy deps
 from cli_llm import CliLlm, is_cli_model
+from mc import SEASON_TOURNAMENT
 from bot_helpers import check_environment, print_run_summary_banner, print_startup_banner
 from forecasting_tools import (
     AskNewsSearcher,
@@ -93,8 +94,9 @@ def _shared_defaults() -> dict[str, str]:
         "CLIP_MAX": "0.97",
         "MAX_COST_PER_RUN_USD": "15",
         # Season tournament IDs change three times a year (next: Spring 2027,
-        # starting ~January). Empty means forecasting-tools' built-in current IDs.
-        "TOURNAMENT_ID": "",
+        # starting ~January); see mc.SEASON_TOURNAMENT. Empty MINIBENCH_ID means
+        # forecasting-tools' built-in "minibench".
+        "TOURNAMENT_ID": SEASON_TOURNAMENT,
         "MINIBENCH_ID": "",
         # Optional cheaper ensemble for MiniBench (e.g. "claude-code/sonnet" so
         # the main tournament on Opus plus MiniBench fit Max 5x's $100 of API
@@ -327,7 +329,7 @@ if __name__ == "__main__":
     bot = build_bot(publish)
     client = MetaculusClient()
     check_metaculus_access(client)
-    main_id = setting("TOURNAMENT_ID") or client.CURRENT_AI_COMPETITION_ID
+    main_id = setting("TOURNAMENT_ID")
     mini_id = setting("MINIBENCH_ID") or client.CURRENT_MINIBENCH_ID
 
     async def forecast_all():
