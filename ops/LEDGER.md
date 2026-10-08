@@ -18,17 +18,23 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Blocked
 
-- Nothing. Waiting on the owner only for: country of tax residence; yes/no to
-  CrunchDAO, the tender feed and downgrade-plus-bot.
+- Nothing. Waiting on the owner only for: yes/no to CrunchDAO (recommended: no)
+  and the tender feed; and how much weekly time they can give to a
+  human-in-the-loop channel, if any.
 
 ## Proposals
 
 - ~~Pay-as-you-go model budget of up to $250~~: withdrawn. Plan credits and the
   subscription cover it.
-- **Owner decision:** downgrade to Max 5x *and* run the bot, worth ~$147/month
-  (PLAN.md §1).
+- ~~Downgrade to Max 5x and run the bot~~: declined by owner 2026-10-08 (stays on Max 20x).
 
 ## Log
+
+- **2026-10-08, owner answers.** Tax residence: California, so US person. W-9, no withholding; prizes are
+  ordinary income for federal and CA tax, with a 1099 likely at $600+. Rough after-tax value of the bot is
+  ~$70–80/month. No downgrade. Owner flagged the opportunity cost of plan API credits and doubts the
+  approach matches successful examples. Answered in session; MiniBench can be switched off
+  (`RUN_MINIBENCH=false`) as soon as credits have a better use.
 
 - **2026-10-08 ~20:00 UTC, setup session.** Owner finished setup with ops/setup.sh. Fixed three bugs found
   live: out-of-range numeric answers (now retried with the range), the test workflow always running dry,
