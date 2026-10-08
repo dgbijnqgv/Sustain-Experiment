@@ -135,5 +135,43 @@ def main() -> None:
     print(f"  on the subscription: ~${sub[0]:.2f}-${sub[2]:.2f}/month of the $200 plan's capacity")
 
 
+
+
+# ------------------------------------------------- Subscription-CLI runtime (v3)
+# Model calls run through `claude -p` on the owner's plan: no cash cost, but they
+# use plan capacity. API-equivalent per question (research on Sonnet, 5 Opus
+# forecasts, Haiku parsing, incl. Claude Code's cached system prompt): ~$1-2.
+CLI_API_EQ_PER_QUESTION = (1.0, 1.5, 2.0)
+PLAN_MONTHLY_API_EQ = (7000, 8000, 9000)     # fully used Max 20x, API-equivalent
+MAIN_Q_PER_MONTH, MINI_Q_PER_MONTH = 90, 130
+# Later seasons start on time (no late-start penalty) but the field keeps
+# growing (another 25-40% fewer $ per point each season).
+LATER_SEASON_FACTOR = 1 / ((1 - COVERAGE_LOSS) ** PRIZE_SCORE_EXPONENT) * 0.675
+NON_US_WITHHOLDING = 0.30
+DOWNGRADE_SAVING = 100   # Max 20x -> Max 5x, guaranteed, per month
+
+
+def subscription_runtime() -> None:
+    opus = BotConfig("Opus", "opus", (0, 0, 0))
+    _, fall_main, _ = season_prize(opus)
+    fall_mini = MINIBENCH_ROUNDS * MINIBENCH_EV
+    later = fall_main * LATER_SEASON_FACTOR + 8 * MINIBENCH_EV
+    print("\nSUBSCRIPTION-CLI RUNTIME (claude -p on the owner's plan)")
+    print(f"  Fall 2026 (late start): main ${fall_main:,.0f} + MiniBench ${fall_mini:,.0f} = ${fall_main + fall_mini:,.0f}"
+          f"  -> ${(fall_main + fall_mini) / 4:,.0f}/month")
+    print(f"  Later seasons (on time, bigger field): ~${later:,.0f}/season -> ${later / 4:,.0f}/month")
+    for label, q in (("main only", MAIN_Q_PER_MONTH), ("main + MiniBench", MAIN_Q_PER_MONTH + MINI_Q_PER_MONTH)):
+        api_eq = [q * c for c in CLI_API_EQ_PER_QUESTION]
+        share = [200 * a / cap for a, cap in zip(api_eq, reversed(PLAN_MONTHLY_API_EQ))]
+        print(f"  plan capacity, {label}: ${api_eq[0]:,.0f}-${api_eq[2]:,.0f}/month API-equivalent"
+              f" = {100 * api_eq[0] / PLAN_MONTHLY_API_EQ[2]:.1f}-{100 * api_eq[2] / PLAN_MONTHLY_API_EQ[0]:.1f}% of Max 20x"
+              f" (~${share[0]:.0f}-${share[2]:.0f} of the $200)")
+    monthly = later / 4
+    print(f"  steady state after tax: US ~${monthly * (1 - TAX_RATE):,.0f}/month;"
+          f" non-US with 30% US withholding ~${monthly * (1 - NON_US_WITHHOLDING):,.0f}/month")
+    print(f"  benchmark: downgrading Max 20x -> Max 5x saves ${DOWNGRADE_SAVING}/month for certain")
+
+
 if __name__ == "__main__":
     main()
+    subscription_runtime()
