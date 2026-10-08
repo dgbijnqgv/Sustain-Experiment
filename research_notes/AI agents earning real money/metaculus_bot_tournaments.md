@@ -34,7 +34,7 @@ The live tournament is the **Fall 2026 FutureEval Bot Tournament**. It has a $50
 ### Inferences
 - The (score)² formula concentrates money at the top, but the $50 floor is low. In recent seasons about 30–41 bots were paid. A newcomer with a moderately positive peer score and near-full coverage can expect a few hundred dollars without being top-10 (see Section 2).
 - Fall 2026 started 9 days ago. Joining now loses only the first ~1–2 weeks of questions, out of a season that runs to January. Every week of delay costs coverage, and coverage is the strongest predictor of being paid.
-- Fall 2026 money arrives around Feb–Apr 2027, not in October 2026. MiniBench rounds settle about every two weeks, but they pay little.
+- Fall 2026 money arrives around Feb–Apr 2027, not in October 2026. MiniBench rounds are scored every two weeks, but their prizes are paid together with the season's main prizes, so they do not bring cash forward.
 
 ### Gaps
 - I could not read the official Fall 2026 rules page (metaculus.com/futureeval/participate/ was blocked). The $50 minimum and the exact squared formula come only from the secondhand summary.
@@ -147,7 +147,7 @@ The source warns that the ≥90% group is self-selected.
 - **Expected payout for a newcomer**, assuming a template-based bot with a current flagship reasoning model (e.g. Claude Opus high-reasoning), a 5+ run median ensemble, and about 95% coverage from now to January:
   - **$0–$1,000 for Fall 2026, central estimate about $300–$600.** Summer 2026 template equivalents would have earned $500–$840, but the field is growing and the start is a little late.
   - A third-party builder independently estimated a 55–65% chance of any prize and an expected value of about $300–400 ([Bowen1314 README (C)](https://github.com/Bowen1314/metaculus-bot)).
-  - **MiniBench adds about $20/round in expectation**, roughly $100–150 across a season. It pays out faster but is lumpy.
+  - **MiniBench adds about $20/round in expectation**, roughly $100–150 across a season. It is lumpy, and it does **not** pay faster: MiniBench prizes are batched and "distributed at the same time" as the season's main prizes (Spring and Fall 2026 announcements, checked 2026-10-08).
 - **Trend:** dollars per point fall about 25–40% per season as entries grow (71 → 102 → 192 eligible). Expect Fall 2026 to be more crowded than Summer.
 - **You do not need the top 10.** In Summer 2026, 41 bots were paid and rank 56 (avg 3.7/question) would still have earned about $136. The cutoff is roughly "average peer score above about +2–3 per question at high coverage."
 
