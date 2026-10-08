@@ -62,7 +62,8 @@ jobs:
         run: poetry run python scripts/check_models.py
       - name: Price sheet (for cost modelling)
         run: poetry run python scripts/check_models.py --list
-      - name: Live read-only check of mc.py (works without a token if the API allows anonymous reads)
+      - name: Live read-only check of mc.py (the Metaculus API requires a token)
+        if: env.METACULUS_TOKEN != ''
         continue-on-error: true
         run: |
           poetry run python mc.py pending --tournament main --max 3 | head -c 4000
