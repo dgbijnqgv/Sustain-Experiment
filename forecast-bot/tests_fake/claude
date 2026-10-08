@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+# Fake `claude -p` for offline tests: answers from the prompt on stdin.
+import json, sys
+prompt = sys.stdin.read()
+args = sys.argv[1:]
+log = open(__file__ + ".calls", "a"); log.write(json.dumps(args) + "\n"); log.close()
+if "prediction_in_decimal" in prompt:
+    out = '{"prediction_in_decimal": 0.37}'
+elif "WebSearch" in " ".join(args):
+    out = "Research: the status quo is stable."
+else:
+    out = "Reasoning... Probability: 37%"
+print(json.dumps({"type": "result", "is_error": False, "result": out}))

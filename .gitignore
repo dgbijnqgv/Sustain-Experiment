@@ -3,3 +3,4 @@ storage/
 .env
 .venv/
 __pycache__/
+tests_fake/*.calls

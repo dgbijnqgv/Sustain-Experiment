@@ -27,6 +27,7 @@ import os
 from typing import Literal
 
 from main import FallTemplateBot2026  # also loads .env and silences noisy deps
+from cli_llm import CliLlm, is_cli_model
 from bot_helpers import check_environment, print_run_summary_banner, print_startup_banner
 from forecasting_tools import (
     AskNewsSearcher,
@@ -74,14 +75,23 @@ def setting(name: str) -> str:
 
 
 def has_web_research() -> bool:
-    return bool(os.getenv("OPENROUTER_API_KEY", "").strip()) and setting("RESEARCH_MODEL").startswith("openrouter/")
+    research = setting("RESEARCH_MODEL")
+    if is_cli_model(research):
+        return True  # the agent CLI searches the web itself
+    return bool(os.getenv("OPENROUTER_API_KEY", "").strip()) and research.startswith("openrouter/")
+
+
+def make_llm(model: str, *, web_tools: bool = False, **kwargs) -> GeneralLlm:
+    if is_cli_model(model):
+        return CliLlm(model, web_tools=web_tools)
+    return GeneralLlm(model=model, **kwargs)
 
 
 def forecaster_llms() -> list[GeneralLlm]:
     effort = setting("REASONING_EFFORT")
     kwargs = {} if effort.lower() == "none" else {"reasoning_effort": effort}
     return [
-        GeneralLlm(model=m.strip(), timeout=300, allowed_tries=3, **kwargs)
+        make_llm(m.strip(), timeout=300, allowed_tries=3, **kwargs)
         for m in setting("FORECAST_MODELS").split(",")
         if m.strip()
     ]
@@ -162,9 +172,9 @@ def build_bot(publish: bool) -> EnsembleBot:
         extra_metadata_in_explanation=True,
         llms={
             "default": forecaster_llms()[0],
-            "summarizer": setting("PARSER_MODEL"),
-            "researcher": GeneralLlm(model=setting("RESEARCH_MODEL"), timeout=180, allowed_tries=2),
-            "parser": setting("PARSER_MODEL"),
+            "summarizer": make_llm(setting("PARSER_MODEL")),
+            "researcher": make_llm(setting("RESEARCH_MODEL"), web_tools=True, timeout=180, allowed_tries=2),
+            "parser": make_llm(setting("PARSER_MODEL")),
         },
     )
 

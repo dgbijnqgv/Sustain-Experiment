@@ -1,0 +1,1 @@
+["-p", "--output-format", "json", "--model", "sonnet", "--allowedTools", "WebSearch,WebFetch", "--max-turns", "12"]

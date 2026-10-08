@@ -50,7 +50,7 @@ jobs:
           key: venv-${{ runner.os }}-${{ steps.py.outputs.python-version }}-${{ hashFiles('forecast-bot/poetry.lock') }}
       - run: poetry install --no-interaction --no-root
       - name: Offline unit tests
-        run: poetry run python -m unittest test_run -v
+        run: poetry run python -m unittest test_run test_cli_llm -v
       - name: Check model IDs on OpenRouter
         run: poetry run python scripts/check_models.py
       - name: Price sheet (for cost modelling)
