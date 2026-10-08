@@ -16,10 +16,11 @@ logs with the GitHub MCP tools (`actions_run_trigger`, `actions_list`,
 2. **Metaculus: no human in the loop.** Never look at the bot's forecasts or
    reasoning on questions that are still open, and never change code, prompts
    or config because of them. Never rerun a question to get a different answer.
-   - Allowed inputs: CI errors and stack traces, cost totals, the
-     bot-testing-area, and questions that have already resolved.
-   - When reading tournament run logs, look only at errors and the cost and
-     count summary.
+   - Tournament logs print counts and errors only; keep it that way.
+   - Allowed inputs: CI errors, coverage counts, the bot-testing-area, and
+     resolved questions.
+   - **One prize bot per person:** never start a second bot, for example from
+     Codex.
 3. **Legal data only.** Use official public APIs or open data that allow
    commercial reuse. No login or CAPTCHA bypass, and no personal data.
 4. **No fake signals or spam.** No fake reviews, no self-runs to inflate Store
@@ -29,26 +30,31 @@ logs with the GitHub MCP tools (`actions_run_trigger`, `actions_list`,
 
 ## Each session, in order
 
-1. **Forecast bot health.**
-   - List the recent runs of `forecast-bot-tournament.yaml`.
-   - If any failed, read only the failure output. Fix the root cause, run the
-     offline tests, push, then trigger `forecast-bot-test.yaml`.
-   - If runs are being skipped, setup is incomplete. Note that in the ledger
-     under *Blocked*.
-2. **Forecast bot cost.** Sum the "Run cost" lines across the week's runs and
-   compare the total with the approved budget. If the season total is on track
-   to pass it, set the per-run cap lower and note it in the ledger. Do not
-   pause the bot without the owner, because skipped questions score zero.
-3. **Forecast bot learning.** Do this only from resolved questions, about
-   monthly, once some have resolved. Write findings in the ledger, and change
-   code only on evidence from resolved questions.
-4. **Apify.** Once `APIFY_TOKEN` exists:
-   - Run the `Apify` workflow with task `stats` and record users, runs and
-     failures in the ledger.
-   - Run `tender-feed-live-check.yaml` weekly, and fix any source that broke.
-5. **Build.** Only when everything above is healthy, and at most 3 Actors in
-   total. Take the next item from the backlog below. Publish only after a clean
-   live check.
+1. **Setup detection.** List recent runs of `forecast-bot-tournament.yaml`.
+   - **Jobs skipped:** `BOT_ENABLED` is unset, so setup is still pending. Note
+     it under *Blocked* and stop.
+   - **Runs succeed but print "not set yet":** secrets are missing. Note it and
+     stop.
+   - **First time they run for real:** trigger `forecast-bot-test.yaml` with
+     `publish=true` once. It posts to Metaculus's unscored bot-testing-area.
+     Check that it succeeded.
+2. **Bot health.**
+   - For failed tournament runs, read only the failure output. Fix the root
+     cause, run the offline tests (`python -m unittest test_run test_cli_llm
+     test_mc`), push, then run the test workflow.
+   - A `claude -p` authentication error means the owner's token expired or was
+     revoked. Ask the owner for a new `CLAUDE_CODE_OAUTH_TOKEN`.
+3. **Coverage.** Run `forecast-bot-coverage.yaml`, record its counts in the
+   ledger, and compare them with last time. If main-tournament coverage of
+   closed questions is below 90%, investigate missed runs. Use run timestamps,
+   not forecasts. Propose an external trigger if GitHub cron is the cause.
+4. **Learning, monthly, from resolved questions only.** Once 20 or more have
+   resolved, the owner may be asked to read the bot's score on Metaculus.
+   Code changes must rest on resolved questions or on bot-testing-area runs,
+   never on open ones.
+5. **Optional channels.** Only after the owner has said yes in the ledger:
+   - **Apify:** run `apify.yaml` stats, and `tender-feed-live-check.yaml`
+     weekly.
 6. **Ledger, commit, push.**
 
 ## Backlog (Actors)
