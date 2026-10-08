@@ -55,6 +55,11 @@ jobs:
         run: poetry run python scripts/check_models.py
       - name: Price sheet (for cost modelling)
         run: poetry run python scripts/check_models.py --list
+      - name: Live read-only check of mc.py (works without a token if the API allows anonymous reads)
+        continue-on-error: true
+        run: |
+          poetry run python mc.py pending --tournament main --max 3 | head -c 4000
+          poetry run python mc.py pending --tournament test --max 3 | head -c 3000
       - name: Forecast on bot-testing-area
         if: env.METACULUS_TOKEN != '' && (env.ANTHROPIC_API_KEY != '' || env.OPENROUTER_API_KEY != '')
         run: poetry run python run.py --mode test_questions ${{ inputs.publish && '' || '--dry-run' }}
