@@ -7,17 +7,19 @@ Append-only log kept by the operator sessions, newest first.
 | Item | State |
 |---|---|
 | Cash spent | $0 of $500 |
-| Forecast bot code | ✅ 25 offline tests; live `claude -p` research and forecast calls verified; Metaculus fetch and post untested until a token exists |
-| Metaculus bot account, token and participation form | ⏳ Owner (PLAN.md §8A) |
-| `ANTHROPIC_API_KEY` (plan credits) and/or `CLAUDE_CODE_OAUTH_TOKEN` | ⏳ Owner |
-| Repository public, secrets, `BOT_ENABLED` / `RUN_MINIBENCH` | ⏳ Owner (§8B) |
-| External 15-minute trigger (cron-job.org) | ⏳ Owner (§8C) |
+| Forecast bot code | ✅ 28 offline tests; practice-area test posted 9/9 forecasts (2026-10-08) |
+| Metaculus bot account, token and participation form | ✅ Done by owner 2026-10-08 |
+| `ANTHROPIC_API_KEY` and `CLAUDE_CODE_OAUTH_TOKEN` | ✅ Set |
+| Repository public, secrets, `BOT_ENABLED` / `RUN_MINIBENCH` | ✅ Set (`BOT_ENABLED=true`, `RUN_MINIBENCH=true`) |
+| External 15-minute trigger (cron-job.org) | ✅ Working; dispatched runs seen 2026-10-08 19:51 UTC |
+| Tournament target | `fall-futureeval-2026` via `mc.SEASON_TOURNAMENT`; **change for Spring 2027 (~Jan)** |
 | Tender feed (optional) | ✅ Built; not published; awaiting the owner's yes |
 | Revenue to date | $0 |
 
 ## Blocked
 
-- **Owner action:** one-time setup (PLAN.md §8) is still pending. As of 2026-10-08 08:58 UTC, tournament runs are skipped because `BOT_ENABLED` is unset.
+- Nothing. Waiting on the owner only for: country of tax residence; yes/no to
+  CrunchDAO, the tender feed and downgrade-plus-bot.
 
 ## Proposals
 
@@ -27,6 +29,11 @@ Append-only log kept by the operator sessions, newest first.
   (PLAN.md §1).
 
 ## Log
+
+- **2026-10-08 ~20:00 UTC, setup session.** Owner finished setup with ops/setup.sh. Fixed three bugs found
+  live: out-of-range numeric answers (now retried with the range), the test workflow always running dry,
+  and forecasting-tools 0.2.92 targeting Summer 2026 (now `fall-futureeval-2026`). Coverage baseline:
+  Fall main 14 questions and MiniBench 59 so far, all closed before launch (missed). Bot is live.
 
 - 2026-10-08 08:58 UTC check-in: tournament runs #1 and #2 both `skipped` (`BOT_ENABLED` unset); setup still pending, stopped per ROUTINE step 1.
 
