@@ -7,6 +7,10 @@ handles the API and the exact submission formats.
   python mc.py pending  --tournament main|minibench|test [--max N]
       JSON list of open questions the bot account has not forecast yet.
 
+  python mc.py coverage --tournament main|minibench
+      Counts only: questions so far and how many the bot answered (no
+      forecasts are shown, so maintenance can check for missed windows).
+
   python mc.py aggregate f1.json f2.json ... > final.json
       Median-combine independent forecasts of the same question.
 
@@ -84,6 +88,24 @@ def cmd_pending(args) -> None:
         print(f"note: {skipped} open question(s) of unsupported type skipped", file=sys.stderr)
     json.dump([describe(q) for q in supported[: args.max]], sys.stdout, indent=1, default=str)
     print()
+
+
+def cmd_coverage(args) -> None:
+    import asyncio
+    from forecasting_tools import MetaculusClient
+    from forecasting_tools.helpers.metaculus_client import ApiFilter
+
+    client = MetaculusClient()
+    api_filter = ApiFilter(allowed_tournaments=[tournament_id(args.tournament)],
+                           allowed_statuses=["open", "closed", "resolved"])
+    questions = asyncio.run(client.get_questions_matching_filter(api_filter))
+    answered = sum(1 for q in questions if q.already_forecasted)
+    status = {}
+    for q in questions:
+        key = f"{getattr(q.state, 'value', q.state)}:{'answered' if q.already_forecasted else 'missed'}"
+        status[key] = status.get(key, 0) + 1
+    print(json.dumps({"tournament": args.tournament, "questions": len(questions), "answered": answered,
+                      "coverage": round(answered / len(questions), 3) if questions else None, "by_state": status}))
 
 
 def _median_percentiles(items: list[dict], is_date: bool) -> dict:
@@ -201,6 +223,9 @@ def main() -> None:
     p.add_argument("--tournament", choices=["main", "minibench", "test"], default="main")
     p.add_argument("--max", type=int, default=20)
     p.set_defaults(func=cmd_pending)
+    c = sub.add_parser("coverage")
+    c.add_argument("--tournament", choices=["main", "minibench"], default="main")
+    c.set_defaults(func=cmd_coverage)
     a = sub.add_parser("aggregate")
     a.add_argument("files", nargs="+")
     a.set_defaults(func=cmd_aggregate)

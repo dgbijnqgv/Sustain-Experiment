@@ -59,6 +59,20 @@ class AggregateTest(unittest.TestCase):
             mc.normalize({"type": "numeric", "percentiles": {"10": 5, "50": 5, "90": 9}, "comment": "c"})
 
 
+class CoverageTest(unittest.TestCase):
+    def test_counts_only(self):
+        qs = [SimpleNamespace(already_forecasted=f, state=SimpleNamespace(value=st))
+              for f, st in ((True, "open"), (False, "closed"), (True, "resolved"), (True, "closed"))]
+        client = mock.MagicMock()
+        client.get_questions_matching_filter = mock.AsyncMock(return_value=qs)
+        with mock.patch("forecasting_tools.MetaculusClient", return_value=client), redirect_stdout(io.StringIO()) as out:
+            mc.cmd_coverage(SimpleNamespace(tournament="main"))
+        result = json.loads(out.getvalue())
+        self.assertEqual((result["questions"], result["answered"], result["coverage"]), (4, 3, 0.75))
+        self.assertEqual(result["by_state"]["closed:missed"], 1)
+        self.assertNotIn("probability", out.getvalue())
+
+
 class SubmitTest(unittest.TestCase):
     def submit(self, question, forecast, dry_run=False):
         client = mock.MagicMock()

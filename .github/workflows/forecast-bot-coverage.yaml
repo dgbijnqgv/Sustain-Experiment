@@ -1,0 +1,36 @@
+name: Forecast bot - coverage
+
+# Counts only: how many tournament questions exist so far and how many the bot
+# answered. Used by the maintenance routine to spot missed question windows
+# without ever seeing forecasts.
+on:
+  workflow_dispatch:
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: forecast-bot
+    env:
+      METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: py
+        with:
+          python-version: "3.11"
+      - uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - uses: actions/cache@v4
+        with:
+          path: forecast-bot/.venv
+          key: venv-${{ runner.os }}-${{ steps.py.outputs.python-version }}-${{ hashFiles('forecast-bot/poetry.lock') }}
+      - run: poetry install --no-interaction --no-root
+      - name: Coverage (counts only)
+        run: |
+          poetry run python mc.py coverage --tournament main 2>/dev/null
+          poetry run python mc.py coverage --tournament minibench 2>/dev/null
