@@ -172,6 +172,45 @@ def subscription_runtime() -> None:
     print(f"  benchmark: downgrading Max 20x -> Max 5x saves ${DOWNGRADE_SAVING}/month for certain")
 
 
+
+
+
+# ------------------------------------------------------------ v4 (post review)
+# Model calls run through `claude -p` paid by the Max plan's included API
+# credits ($200/month on Max 20x, $100 on Max 5x; otherwise unused), falling
+# back to the plan itself. With a forecasting system prompt instead of Claude
+# Code's, a question costs ~$0.6-0.85 at API prices.
+V4_COST_PER_QUESTION = (0.60, 0.72, 0.85)
+# Prize scales with score squared and a missed question scores 0, so the prize
+# scales roughly with coverage squared.
+COVERAGE_SCENARIOS = {"external 15-min trigger (~95%)": 0.95, "GitHub cron only (~70%)": 0.70}
+# Probability that a season pays at a $200/month rate ($800+): needs ~13-15
+# peer points per question; template bots have not exceeded ~10.
+P_200_MONTH = (0.03, 0.08)
+
+
+def v4_summary() -> None:
+    opus = BotConfig("Opus", "opus", (0, 0, 0))
+    _, fall_main, _ = season_prize(opus)        # already includes P_ZERO
+    later_main = fall_main * LATER_SEASON_FACTOR
+    print("\nV4: ECONOMICS AFTER RED-TEAM REVIEW (per month; seasons are 4 months)")
+    for label, cov in COVERAGE_SCENARIOS.items():
+        k = cov ** 2 / 0.95 ** 2   # season_prize assumed full-season-equivalent coverage
+        main = later_main * k / 4
+        mini = 8 * MINIBENCH_EV * cov / 4
+        print(f"  {label}: main ${main:,.0f} | +MiniBench ${mini:,.0f} | total ${main + mini:,.0f} pre-tax,"
+              f" ~${(main + mini) * (1 - NON_US_WITHHOLDING):,.0f} after 30% withholding")
+    main_q, all_q = MAIN_Q_PER_MONTH, MAIN_Q_PER_MONTH + MINI_Q_PER_MONTH
+    lo, mid, hi = V4_COST_PER_QUESTION
+    print(f"  model cost: main ${main_q * lo:,.0f}-{main_q * hi:,.0f}/month, with MiniBench ${all_q * lo:,.0f}-{all_q * hi:,.0f}/month"
+          f" -> covered by Max 20x's $200 API credits (Max 5x's $100 covers main only); cash $0")
+    print(f"  chance a season pays at a $200/month rate: {P_200_MONTH[0]:.0%}-{P_200_MONTH[1]:.0%}")
+    combo = DOWNGRADE_SAVING + later_main * (COVERAGE_SCENARIOS['external 15-min trigger (~95%)'] ** 2 / 0.95 ** 2) / 4 * (1 - NON_US_WITHHOLDING)
+    print(f"  owner's option: downgrade to Max 5x AND run the bot (main on its $100 credits):"
+          f" ~${combo:,.0f}/month of value (= $100 certain + bot)")
+
+
 if __name__ == "__main__":
     main()
     subscription_runtime()
+    v4_summary()

@@ -1,224 +1,273 @@
 # Master plan: an AI-run setup that helps pay for its own subscription
 
-*Version 3, 2026-10-08. Supersedes earlier versions. Evidence is in
-`reports/` (three reports) and `research_notes/` (17 notes). Numbers come from
-`ops/finance_model.py`.*
+*Version 4, 2026-10-08 (overnight). It supersedes earlier versions and the two
+earlier reports where they differ. It incorporates an independent red-team
+review (`research_notes/Overnight plan research/red_team_review.md`). Numbers
+come from `python3 ops/finance_model.py` (the "V4" section).*
 
 ## 1. Bottom line
 
-- **What to run:** a Metaculus **FutureEval forecasting bot**, running on **your
-  Claude subscription** through `claude -p`. It runs every 30 minutes on GitHub
-  Actions.
-  - Cash cost: **$0**.
-  - Plan capacity used: about **1–6%** of your Max 20x plan, roughly $2–13 of
-    the $200.
-  - It is built and tested, including a live end-to-end run. It is waiting
-    only on your two tokens.
-- **Expected income:** about **$75–110 a month after tax** in steady state (range
-  $0 to ~$800 a month). Prizes are paid **3 times a year**; the first one
-  arrives around Feb–Apr 2027.
-- **Compared with your $200 goal:** expected value covers about half.
-  - The chance of reaching $200 a month in a season is **~15–20%**, which needs
-    a top-20 finish.
-  - For comparison, downgrading to Max 5x saves $100 a month for certain. I
-    say this plainly so the experiment is judged fairly.
-- **Optional extras, low priority:** the Apify tender feed (built, ~$12 a month)
-  and CrunchDAO DataCrunch (~$8–50 a month, paid in crypto). Each adds
-  owner setup time for a small return, so neither is started without your
-  yes.
-- **Your part:** about **25 minutes** of setup (§8). After that, everything runs
-  and is maintained autonomously.
+- **Recommended engine:** a Metaculus **FutureEval forecasting bot** that runs
+  Claude Code (`claude -p`).
+  - It is paid **first by your Max plan's included API credits.** Max 20x
+    includes $200/month of API credits, which are otherwise unused.
+  - It falls back to **your subscription** only if those credits run out.
+- **Cost:** **$0 cash.** It doesn't use your weekly limit while credits last.
+- **Status:** it's built and tested. 25 offline tests pass, and live `claude -p`
+  research and forecasting calls work. Fetching and posting to Metaculus can
+  only be tested once you create the bot token.
+- **Expected value:**
+
+  | Coverage of question windows | Pre-tax per month | After 30% US withholding |
+  |---|---|---|
+  | ~95%, with a reliable trigger | **~$105** | ~$74 |
+  | ~70%, GitHub's scheduler alone | ~$64 | |
+
+  - Prizes are paid three times a year. The first one (Fall 2026, joined late)
+    will probably arrive around Mar–May 2027.
+- **Against the $200 goal:**
+  - Expected value covers about half.
+  - The chance of a season paying at a $200/month rate is **3–8%**.
+  - Hitting that rate would take a finish clearly above the best template bots
+    so far.
+- **If the goal is mainly financial:** downgrade to Max 5x and run the bot as
+  well. Max 5x includes $100 of credits, which covers the main tournament.
+  That is about **$147/month of value**: $100 saved for certain plus the bot.
+  I'm aware you kept Max 20x on purpose to test me, so this is your call.
+- **Your part:** about **45 minutes** of one-time setup (§8), plus prize
+  paperwork, about 15 hours a year in total (§9).
 
 ## 2. Goal and constraints
 
 | | |
 |---|---|
-| **Goal** | $200 a month net to cover the AI subscription, with minimal owner involvement |
-| **Cash budget** | $500 total; anything above $100 needs your approval. **Current plan spends $0.** |
-| **Compute** | Your Claude plan (Max, $200) is the engine. A ChatGPT/Codex plan is available as a backup. Pay-per-token APIs are avoided: they cost far more than the plan for the same work. |
-| **Ethics** | No spam, no fake reviews, no terms-of-service violations, no undisclosed AI where disclosure is required, no personal data |
-| **Agent's limits** | It can't open accounts, pass identity checks, receive money or spend money. Those steps are yours, one time each. |
+| **Goal** | $200/month net to cover the subscription, with minimal owner involvement |
+| **Cash budget** | $500 total; above $100 needs your approval. **This plan spends $0.** |
+| **Compute** | Your Claude plan, specifically its included API credits, then the plan itself. Codex is a backup on your own machine only. Pay-per-token APIs are never paid in cash. |
+| **Ethics** | No spam, no fake reviews, no terms-of-service violations, no undisclosed AI, no personal data |
+| **Agent's limits** | It can't open accounts, pass identity checks, receive money or spend money. Those steps are yours. |
 
-## 3. Why this strategy (evidence summary)
+## 3. Why this strategy
 
-1. **No verified case of an autonomous agent netting $200 a month from customers
-   it found itself.**
-   - Agent-run shops lost money: Project Vend, the WSJ's Claudius, and Andon
-     Market, which is $40–62k down.
-   - Agents that build and sell earned $0–54.
-   - The big numbers came from human audiences or fraud.
-   - Source: `reports/AI agents earning real money.md`.
-2. **The money is where prize money already sits and the work is checked by
-   machine.** Metaculus FutureEval is the clearest case.
+1. **Agents that try to find their own customers don't make money.** I found
+   no verified case of an autonomous agent netting $200/month from customers it
+   found itself. Agent-run shops lost money, and agents that build and sell
+   earned $0–54. Source: `reports/AI agents earning real money.md`.
+2. **Prize money that already exists, judged by machine, does pay agents.**
+   FutureEval is the clearest case.
    - Its rules **require** no human in the loop.
-   - Prizes are published: $175k a year, with 30–41 bots paid per season.
-   - Metaculus's own template running Claude Opus placed **24th of 284** last
-     season, a would-be prize of about $842.
-3. **Channels ruled out**, with sources in the reports:
-   - Content/SEO/YouTube/KDP: platforms now punish AI volume.
-   - Bounties and bug bounties: saturated, and banned or restricted in many
-     places.
-   - Freelancing: the terms forbid bots.
-   - Trading: negative base rates.
-   - AI app stores: no real revenue share.
-   - Micro-SaaS: distribution is the bottleneck.
-   - x402/MCP listings: inflated volumes.
-4. **Running on the subscription is allowed.**
-   - Anthropic documents `claude -p` and the `CLAUDE_CODE_OAUTH_TOKEN` "for CI
-     pipelines, scripts".
-   - Its support article (updated 2026-10-07) confirms `claude -p` uses
-     subscription limits.
-   - A bot that serves only you is not a "product offered to others".
-   - Source: `research_notes/Overnight plan research/claude_subscription_automation.md`.
+   - It pays $175k a year, to 30–41 bots per season.
+   - Metaculus's own template running Claude Opus placed **24th of 284** in
+     Summer 2026, worth about $842. Caveat: those per-bot figures come from a
+     third-party compilation.
+3. **Other channels, ranked** (`research_notes/Overnight plan research/`):
+   - **CrunchDAO DataCrunch:** ~$8–50/month, usually $0. The payout curve is
+     very steep and payment is in crypto.
+   - **Apify tender feed:** built; ~$12/month.
+   - **Kaggle CASMI26:** under a 5% chance of any cash.
+   - **Ruled out**, with sources in the reports:
+     - content, SEO, YouTube and KDP;
+     - bounties and bug bounties;
+     - freelancing;
+     - trading;
+     - AI app stores;
+     - micro-SaaS;
+     - x402 and MCP listings.
+4. **The compute is allowed, in this order of preference:**
+   1. API credits paying for `claude -p` (clean).
+   2. Subscription `claude -p` with `CLAUDE_CODE_OAUTH_TOKEN`. Anthropic
+      documents this "for CI pipelines, scripts". It's a grey area under the
+      "ordinary, individual usage" wording, but it's for your own benefit, not
+      a product for others.
 
 ## 4. Channels
 
-| # | Channel | Status | Expected net/month | Your effort | Evidence |
+| # | Channel | Status | Expected/month | Your effort | Evidence |
 |---|---|---|---|---|---|
-| 1 | **Metaculus FutureEval bot** (main tournament) | Built and tested; needs tokens | $55–80 after tax | 25 min once, plus prize KYC | Strong (A−) |
-| 1b | MiniBench (same bot) | Built; off by default | +$25–35 | One decision (repo visibility) | Moderate |
-| 1c | Market Pulse (~$7k/quarter, same bot) | Later: needs continuous updating | +$0–100 | None | Moderate |
-| 2 | Apify tender feed | Built, live-validated; unpublished | ~$12 (range $0–96) | 20 min, Apify identity check | Moderate (B−) |
-| 3 | CrunchDAO DataCrunch 2 | Researched; not built | $8–50, usually $0 | Sign-up, crypto wallet, exchange identity check to cash out | Moderate |
-| 4 | Kaggle CASMI26 (closes Dec 14) | Researched | Under 5% chance of any cash | Phone verification, accept rules | Weak |
+| 1 | **FutureEval bot**, main tournament | Built; needs tokens | ~$67 pre-tax | Setup in §8 | B+ |
+| 1b | MiniBench, same bot | Built; on once the repo is public | +$38 | Repo visibility | B |
+| 1c | Market Pulse (~$7k/quarter), same bot | Roadmap: needs forecasts to keep updating | Unknown, likely a smaller field | None | C |
+| 2 | Apify tender feed | Built, live-validated, unpublished | ~$12 | 20 min, identity check | B− |
+| 3 | CrunchDAO DataCrunch 2 | Researched | $8–50 | Sign-up, crypto wallet, exchange identity check | B− |
+| 4 | Kaggle CASMI26 (closes Dec 14) | Researched | <5% chance of any cash | Phone verification, accepting rules | C |
 
 **Recommendation:**
-- Start channel 1 now.
-- Turn on 1b once you decide repo visibility (see §8).
-- Add 2 or 3 only if you want more income streams in exchange for about 20
-  minutes of identity checks each.
-- Skip 4 unless there is spare time.
+- Do 1 and 1b now.
+- Start 2 or 3 only if you say yes; each adds paperwork for small money.
+- Skip 4.
 
-## 5. How it works
+## 5. Architecture
 
 ```
-GitHub Actions, every 30 min (7 and 37 past each hour)
-  └─ forecast-bot/run.py   Metaculus's official template, unmodified,
-     │                     plus our ensemble subclass
-     ├─ fetch open, not-yet-answered questions (Metaculus API, bot token)
-     ├─ research    → claude -p (Sonnet) with WebSearch/WebFetch
-     ├─ 5 forecasts → claude -p (Opus), no tools, independent
-     ├─ parse       → claude -p (Haiku)
-     ├─ median ensemble, clip binary to 3–97%
-     └─ post forecast + required private reasoning comment
-  Logs show counts and errors only, never forecasts.
+External trigger, every 15 min (cron-job.org) ──┐
+GitHub schedule, every 30 min (backup) ─────────┤
+                                                 ▼
+GitHub Actions: forecast-bot-tournament.yaml (one run at a time)
+  └─ run.py   Metaculus's official template + our ensemble subclass
+     ├─ fails in seconds if the Metaculus token is bad
+     ├─ open, unanswered questions only
+     ├─ research    → claude -p Sonnet, high effort, WebSearch/WebFetch,
+     │                with a forecasting system prompt
+     ├─ 5 forecasts → claude -p Opus, high effort, no tools, independent
+     ├─ parse       → claude -p Haiku
+     ├─ median, binary forecasts clipped to 3–97%
+     └─ post the forecast, then the required reasoning comment (retried)
+  Credentials per call: ANTHROPIC_API_KEY (plan credits) → CLAUDE_CODE_OAUTH_TOKEN
+  Logs: counts and errors only, with digits masked.
 
-Claude Code check-in (Mon/Thu 08:58 UTC, this session)
-  └─ ops/ROUTINE.md: health, coverage (counts only), fixes, ledger
+Claude Code check-in, Mon/Thu: health, coverage (counts only), fixes, ledger
+GitHub emails you automatically when a scheduled run fails.
 ```
 
-- **Why every 30 minutes:** questions are normally open for only **~1.5
-  hours**, and GitHub sometimes delays scheduled runs. That rules out routines,
-  which run at most hourly. Running every 30 minutes stays within GitHub's free
-  2,000 private-repo minutes for the main tournament.
-- **Fallbacks, already supported by the code:**
-  - `ANTHROPIC_API_KEY`: your plan's included $200/month API credits.
-  - `OPENROUTER_API_KEY`: Metaculus's donated credits.
-  - Codex on a cron on your own computer, if Anthropic's policy changes.
-- **Tested:** 23 offline tests; a live `claude -p` research and forecasting run
-  on a binary and a numeric question; and CI on every change.
+- **Why 15 minutes plus an external trigger:**
+  - Questions are open for about **1.5 hours**.
+  - In this repo, GitHub's hourly schedule fired once in about 7 hours.
+  - Another bot builder measured about 5 runs a day on a 20-minute schedule.
+  - Bots with 50–90% coverage earned a median of **$0**.
+- **Why a public repo:**
+  - Running every 15 minutes needs about 2,900+ Actions minutes a month.
+    Public repos have unlimited minutes; private repos get 2,000.
+  - Metaculus requires winners to share their code anyway.
+  - Logs mask digits, and secrets never appear in public.
+- **Fallbacks already in the code:**
+  - OpenRouter, using Metaculus's donated credits.
+  - Codex on your own machine via cron.
+  - `FORECASTER.md`: a Claude Code routine playbook, used only if Actions is
+    disabled, never both at once.
 
 ## 6. Economics
 
 | Item | Value |
 |---|---|
-| Fall 2026 prize (late start, ~12% of questions missed) | ~$308 expected for the main tournament; +$140 with MiniBench |
-| Later seasons (on time, larger field) | ~$430 per season expected → ~$107/month pre-tax |
-| Upside | A top-15 finish paid $1.9–3.4k in Summer 2026 |
-| Chance of $0 in a season | ~30% (bugs, missed windows, bad luck) |
-| Cash cost | $0. About $3/month of GitHub minutes only if MiniBench runs in a private repo. |
-| Plan capacity used | Main only: 1–3% of Max 20x. With MiniBench: 2–6%. |
-| Claude tokens to build all this | About $26 API-equivalent, or about $0.70 of plan capacity |
-| Check-in sessions | About $0.20/month of plan capacity |
+| Steady-state prize, ~95% coverage | ~$67/month main + ~$38/month MiniBench = **~$105 pre-tax** |
+| Fall 2026 | ~$308 main (late start). Paid around Mar–May 2027. |
+| Later seasons | Field growth has cut each season's dollars per point by 25–40%. The estimate keeps falling unless the bot improves. |
+| Chance of $0 in a season | ~30% |
+| Chance of a $200/month-rate season | 3–8% |
+| Model cost at API prices | ~$54–76/month main only; ~$132–187/month with MiniBench |
+| What you actually pay | **$0**: Max 20x includes $200/month of credits. A Console organization with no card on file cannot overspend. Overflow falls back to the subscription. |
+| GitHub | $0 with a public repo |
+| My overnight build | ~$68 at API prices, mostly cached re-reads. It used part of your weekly limit, which is at "warning" until about Oct 14. |
+| Check-ins | ~$1–3 per check-in at API prices, from your subscription. The routine is kept short. |
 | Tax | US: ordinary income. Non-US: expect 30% US withholding on prizes. |
-| **Steady-state net** | **~$75–110/month after tax**; ~$90–150 with the optional extras |
-
-Payout timing: the first Fall prize arrives around Feb–Apr 2027. Spring 2027
-(Jan–Apr) pays around mid-2027. Prizes are lumpy: three times a year, not
-monthly.
 
 ## 7. Compliance
 
 | Party | Verdict | How we comply |
 |---|---|---|
-| Anthropic | ✅ `claude -p` with `CLAUDE_CODE_OAUTH_TOKEN` is documented for CI and scripts. The use is for your own benefit, not a product for others. | One personal bot. No reselling. The token is kept only in GitHub secrets. If policy changes, switch to the plan's API credits. |
-| Metaculus | ✅ Bots are allowed, including AI-written ones. One prize bot per person. No human in the loop. A reasoning comment on every forecast. | Logs show counts only. Maintenance looks only at errors, coverage counts and resolved questions. We never use the community prediction. **Never run a second bot from Codex.** |
-| GitHub | ⚠️ Grey area: Actions use must relate to the repo's software project. Running the repo's own bot can count as deployment, it is low burden, and it is Metaculus's official method. | Light jobs. If you prefer zero risk: a dedicated bot repo, or your own always-on machine. |
-| OpenAI (Codex, backup only) | ✅ `codex exec` on your own computer's cron. ⚠️ Running it in CI on your ChatGPT login is discouraged. | Not used unless needed. |
-| Apify and data licences (optional channel 2) | ✅ | Listing marked unofficial. TED and OGL v3 attribution added. |
-| Taxes and identity checks | Your obligation | Use your legal name everywhere. W-9 or W-8BEN at payout. Keep a simple income log; the ledger helps. |
+| Anthropic | ✅ API credits for `claude -p`. ⚠️ Subscription token: documented for scripts and CI; grey under "ordinary, individual usage". | Credits first. One personal bot, no reselling. The token lives only in a GitHub secret. |
+| Metaculus | ✅ Bots allowed, including AI-written. One prize bot per person. No human in the loop. Reasoning comment required. | Logs show counts only, with digits masked. Maintenance looks only at errors, coverage and resolved questions. The community prediction is never used. **Never a second bot.** |
+| GitHub | ⚠️ Actions must relate to the repo's project. This is the bot's own repo running itself, which is Metaculus's official method. | Short jobs. Secrets only in the steps that use them. |
+| cron-job.org (trigger) | ✅ It only calls GitHub's API. | A fine-grained token limited to Actions on this one repo. |
+| OpenAI (Codex) | Backup only, on your own machine (✅). Running it in CI is discouraged. | Not used. |
+| Apify and data licences | ✅ | Marked unofficial; TED and OGL attribution included. |
+| Taxes and identity checks | Your obligation | Use your legal name everywhere. W-9 or W-8BEN at payout. |
 
-## 8. Your one-time setup (about 25 minutes)
+## 8. Your one-time setup (about 45 minutes)
 
-1. **Metaculus (10 min).** At https://www.metaculus.com/futureeval/participate/:
-   - create an account, then a bot account and its **token**;
-   - fill in the first section of the participation form at
-     https://forms.gle/aQdYMq9Pisrf1v7d8 (tick the credits request as a backup).
-2. **Claude token (5 min).** On your computer, in any terminal with Node
-   installed, run:
-   `npx -y @anthropic-ai/claude-code setup-token`
-   Log in with your Claude account and copy the token it prints.
-3. **GitHub (5 min).** In this repo, go to Settings → Secrets and variables →
-   Actions.
-   - Secrets: `METACULUS_TOKEN` and `CLAUDE_CODE_OAUTH_TOKEN`.
-   - Variable: `BOT_ENABLED` = `true`.
-4. **Two answers for me:**
-   - **Country of tax residence.** This affects payout options, withholding
-     and whether CrunchDAO or Apify make sense.
-   - **Make this repo public?** Public means MiniBench runs free (about +$25–35
-     a month). Private means main tournament only.
-     *My recommendation: keep it private for now.* The repo holds the plan and
-     research. If you want MiniBench, I can move the bot to its own public repo
-     instead.
+**A. Accounts and tokens (25 min)**
+1. **Metaculus:** at https://www.metaculus.com/futureeval/participate/, create
+   an account, then a **bot account** and its **token**. Fill in the first
+   section of https://forms.gle/aQdYMq9Pisrf1v7d8 and tick the credits request.
+2. **API credits:** at claude.ai → Settings → Billing, claim the Max plan's
+   monthly API credits by linking a Console organization (this needs 7 days on
+   the plan).
+   - **Do not add a card** to that organization. Then it cannot overspend.
+   - Create an **API key** there.
+   - If credits aren't claimable yet, skip this. The subscription token below
+     works on its own.
+3. **Subscription token (fallback):** in a terminal, run
+   `npx -y @anthropic-ai/claude-code setup-token`, log in, and copy the token.
+4. *(Optional, free)* Email contact@asknews.app for AskNews builder access, as
+   a second research source.
 
-Nothing else is needed. The next check-in detects the secrets, runs the
-end-to-end test against Metaculus's unscored test area, and confirms the
-tournament runs.
+**B. GitHub (10 min)**
+5. Make this repository **public**: Settings → General → Danger zone → Change
+   visibility. This gives unlimited Actions minutes and turns on MiniBench.
+   It contains code, plans and research only; secrets stay secret.
+   *Prefer private?* Then skip MiniBench, and add a payment method with a $10
+   spending limit if you also add step 6.
+6. Go to Settings → Secrets and variables → Actions:
+   - **Secrets:** `METACULUS_TOKEN`, `ANTHROPIC_API_KEY` (if you have it) and
+     `CLAUDE_CODE_OAUTH_TOKEN`.
+   - **Variables:** `BOT_ENABLED` = `true`, and `RUN_MINIBENCH` = `true` if the
+     repo is public.
 
-## 9. Operations, measures and decision points
+**C. Reliable trigger (10 min, strongly recommended)**
+7. **Create a GitHub token:** Settings → Developer settings → Fine-grained
+   tokens. Limit it to this repo only. Permission: **Actions: Read and write**.
+   Expiry: 1 year.
+8. **Create the trigger:** at https://cron-job.org (free), create a job that
+   runs every 15 minutes and sends:
 
-- **Autonomy:** `ops/ROUTINE.md` runs twice a week. The bot itself needs no
-  sessions.
-- **What I track:**
-  - coverage of 90% or more (`mc.py coverage`);
-  - zero failed runs;
-  - average peer score on resolved questions of at least +5 per question;
-  - plan capacity below 10%.
+   ```
+   POST https://api.github.com/repos/dgbijnqgv/Sustain-Experiment/actions/workflows/forecast-bot-tournament.yaml/dispatches
+   Headers:
+     Authorization: Bearer <token from step 7>
+     Accept: application/vnd.github+json
+   Body:
+     {"ref":"claude/ai-revenue-generation-ume6vn"}
+   ```
 
-| When | Check | Action |
+**D. Tell me (one line each)**
+- Your **country of tax residence**. It affects withholding, payout options and
+  whether options 2 and 3 make sense.
+- Whether you want options **2 or 3**.
+- Whether you want the **downgrade-plus-bot** option.
+
+## 9. Ongoing obligations and timeline
+
+| When | What | Who |
 |---|---|---|
-| Week 1 | Coverage ≥ 90%? | Below that: add an external trigger (cron-job.org calling workflow_dispatch), or a second schedule |
-| December | Score ≥ +5 on 40+ resolved questions? | Below 0: stop MiniBench and review the approach using resolved questions only |
-| Feb–Apr 2027 | Fall prize paid? | Re-plan Spring 2027 using the real numbers |
-| Any time | Anthropic policy change on `claude -p` | Switch to plan API credits with `ANTHROPIC_API_KEY` |
+| Mon/Thu | Health and coverage check, fixes, ledger | Agent |
+| Run failures | GitHub emails you; the next check-in fixes them | Agent |
+| Early December | **Spring 2027 prep:** confirm the new tournament ID (set the `TOURNAMENT_ID` variable if the library hasn't updated), re-submit the participation form, renew AskNews | Agent prepares; you fill in forms |
+| ~Jan 6, 2027 | Fall forecasting ends; Spring starts around Jan 7 | Automatic |
+| Mar–May 2027 | Fall prize: identity check, nationality and residency proof, W-8BEN or W-9, bank details, bot-maker survey. **Respond within 30 days** or the prize may be forfeited. | You, ~1–2 hours |
+| Every year | Tax filing for the prize income | You |
+| ~Oct 2027 | `CLAUDE_CODE_OAUTH_TOKEN` and the GitHub token expire (1 year). Renew both. | You, 10 min |
 
-## 10. Risks
+Your total time: about 45 minutes now, then about 10–15 hours a year.
 
-| Risk | Likelihood | Impact | Mitigation |
-|---|---|---|---|
-| Missed question windows from GitHub cron delays | Medium | Lower score | 30-minute cadence, coverage tracking, external trigger as backup |
-| Anthropic changes subscription use of `claude -p` | Low–medium | Bot stops | API-credit fallback already coded |
-| GitHub flags the Actions use | Low | Actions restricted | Light jobs; can move to a dedicated repo or your own machine |
-| Bot scores poorly | Medium | $0 season | Ensemble, clipping and research; tune on resolved questions only |
-| Metaculus ends or changes FutureEval | Low | Channel ends | Continuous since 2024; watch for the Spring 2027 announcement |
-| Payout rail not available in your country | Unknown | Can't collect | Answer the country question in §8 |
-| Leaked `CLAUDE_CODE_OAUTH_TOKEN` | Low | Others use your plan | GitHub secret, private repo, no fork-PR triggers. Revoke it in claude.ai settings if exposed. |
-| Bot competes with your own usage | Low | Hitting limits sooner | 1–6% of capacity, at most 3 parallel calls |
+## 10. Measures and decision points
 
-## 11. Perspectives covered
+| Measure | Target | If missed |
+|---|---|---|
+| Coverage (`forecast-bot-coverage.yaml`, counts only) | ≥ 90% from week 1 | Check the external trigger; add a second trigger |
+| Failed runs | 0 | Fixed at the next check-in |
+| Peer score on resolved questions | ≥ +5 per question once 40+ have resolved | Below 0: turn MiniBench off and review using resolved questions only |
+| Credits used | ≤ $200/month | Lower `PREDICTIONS_PER_QUESTION` or turn MiniBench off |
 
-| Perspective | Section or source |
+## 11. Risks
+
+| Risk | Likelihood | Mitigation |
+|---|---|---|
+| GitHub schedule drops runs | High | External trigger every 15 min, plus the 30-min schedule |
+| A token or API problem uses up runs | Medium | Fast-fail token check; GitHub failure emails |
+| Anthropic policy change for subscription `claude -p` | Low–medium | Credits are the primary path anyway |
+| Bot scores poorly | Medium | Ensemble, high effort, clipping; tuning only on resolved questions |
+| A forecast is posted without its comment | Low | Comment retries, comment-first ordering in `mc.py` |
+| Leaked tokens | Low | Step-scoped secrets. Revoke a leaked GitHub token in GitHub settings, and the Claude token in claude.ai settings (check the exact path when you set it up) |
+| Bot competes with your own usage | Low | Credits are primary; at most 3 calls in parallel |
+| FutureEval changes or ends | Low | It has run continuously since 2024; re-plan each season |
+| Payout rail missing in your country | Unknown | Tell me your country (§8D) |
+| The prize-model numbers rest on a third-party payout compilation | Medium | Ranges and grades reflect it; real results replace the model after Fall |
+
+## 12. Perspectives covered
+
+| Perspective | Where |
 |---|---|
-| Revenue channels: breadth and evidence | §3–4; reports |
-| Compute model: subscription vs API vs free credits | §5–6; `Overnight plan research/*automation*`, `free_inference*` |
-| Policies of every party (Anthropic, OpenAI, Metaculus, GitHub, Apify, data licences) | §7; `Plan financial and policy check` |
-| Full costs, including Claude tokens and plan capacity | §6; `ops/finance_model.py` |
-| Revenue expectation, variance and timing | §1, §6 |
-| Benchmark against doing nothing or downgrading | §1, §6 |
-| Taxes, payout rails and identity checks | §7; `owner_side_risks_tax_payouts.md` |
-| Your time and effort | §8; owner-side notes |
-| Account and security risks | §10 |
-| Tournament rules and ethics | §7; `FORECASTER.md`; `ROUTINE.md` |
-| Operations, monitoring, measures and stop rules | §9 |
-| Technical feasibility (live-tested) | §5 |
-| Long-term sustainability across seasons | §6, §9 |
+| Revenue channels: breadth, evidence, rankings | §3–4; `reports/`; `research_notes/` |
+| Compute: subscription vs credits vs API vs free | §1, §5–6; `claude_subscription_automation.md`, `codex_*`, `free_inference*` |
+| Policies of every party | §7; `Plan financial and policy check/` |
+| Full costs, including Claude tokens, credits and Actions minutes | §6; `ops/finance_model.py` |
+| Expected revenue, variance, timing and its decline | §1, §6 |
+| Benchmark: downgrade, and downgrade plus bot | §1 |
+| Tax, payout rails, identity checks and claim windows | §7, §9; `owner_side_risks_tax_payouts.md` |
+| Your time, now and yearly | §8–9 |
+| Reliability: scheduling and coverage | §5, §10–11 |
+| Security of tokens and secrets | §7–8, §11 |
+| Tournament rules and fairness | §7; `ROUTINE.md`; masked logs |
+| Testing status: what is and isn't verified | §1 |
+| Season calendar and renewals | §9 |
+| Independent review | `red_team_review.md`. All 5 critical items are addressed here. |

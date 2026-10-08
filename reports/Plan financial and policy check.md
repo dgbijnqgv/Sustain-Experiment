@@ -1,3 +1,5 @@
+> **Status (2026-10-08):** background research. Where it differs from `PLAN.md` (v4), the plan wins: it runs the bot via `claude -p` on the Max plan's API credits and subscription, not paid APIs, and uses the corrected numbers.
+
 # Plan financial and policy check
 
 *2026-10-08. The model is `ops/finance_model.py`, with every assumption a

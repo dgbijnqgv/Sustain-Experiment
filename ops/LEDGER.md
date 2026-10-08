@@ -6,27 +6,48 @@ Append-only log kept by the operator sessions, newest first.
 
 | Item | State |
 |---|---|
-| Cash spent | $0 of $500 (owner approval needed above $100) |
-| Forecast bot: code | ✅ Built; offline tests and model-ID check pass in CI |
-| Forecast bot: Metaculus bot account, token, participation form | ⏳ Owner |
-| Forecast bot: Anthropic Console API key (Max plan credits) + AskNews or OpenRouter for research | ⏳ Owner |
-| Forecast bot: GitHub secrets + `BOT_ENABLED=true` | ⏳ Owner |
-| Tender feed Actor: code | ✅ Live-validated in CI against TED, FTS and CF |
-| Apify account, payout, `APIFY_TOKEN` secret | ⏳ Owner |
-| Actors live | 0 |
+| Cash spent | $0 of $500 |
+| Forecast bot code | ✅ 25 offline tests; live `claude -p` research and forecast calls verified; Metaculus fetch and post untested until a token exists |
+| Metaculus bot account, token and participation form | ⏳ Owner (PLAN.md §8A) |
+| `ANTHROPIC_API_KEY` (plan credits) and/or `CLAUDE_CODE_OAUTH_TOKEN` | ⏳ Owner |
+| Repository public, secrets, `BOT_ENABLED` / `RUN_MINIBENCH` | ⏳ Owner (§8B) |
+| External 15-minute trigger (cron-job.org) | ⏳ Owner (§8C) |
+| Tender feed (optional) | ✅ Built; not published; awaiting the owner's yes |
 | Revenue to date | $0 |
 
 ## Blocked
 
-- Waiting on the owner's one-time setup (see `PLAN.md`).
+- Waiting on the owner's one-time setup (PLAN.md §8).
 
 ## Proposals
 
-- ~~Forecast bot pay-as-you-go budget of up to $250~~: withdrawn 2026-10-08.
-  The Max plan's included API credits cover the bot. Pay-as-you-go would risk
-  $295 for an expected net of $137.
+- ~~Pay-as-you-go model budget of up to $250~~: withdrawn. Plan credits and the
+  subscription cover it.
+- **Owner decision:** downgrade to Max 5x *and* run the bot, worth ~$147/month
+  (PLAN.md §1).
 
 ## Log
+
+### 2026-10-08 (overnight): plan v4
+- **Research:** six overnight tracks plus an independent red-team review:
+  - Claude and Codex subscription automation policy
+  - free inference and Metaculus operations
+  - other prize competitions
+  - CrunchDAO and Kaggle
+  - owner-side tax, payouts and risks
+- **Key findings:**
+  - Questions are open for only ~1.5 hours.
+  - GitHub's schedule is unreliable.
+  - The Metaculus free model proxy has been retired.
+  - Plan API credits are the cleanest way to pay for compute.
+- **Built:**
+  - a `claude -p` backend: high effort, forecasting system prompt, API credits
+    with subscription fallback;
+  - `mc.py` (pending, aggregate, submit, coverage);
+  - digit-masked tournament logs, comment retries, fast-fail token check;
+  - step-scoped secrets and tournament-ID overrides.
+- **Economics:** ~$105/month pre-tax at ~95% coverage; 3–8% chance of a
+  $200/month season.
 
 ### 2026-10-08: financial and policy check
 - Report: `reports/Plan financial and policy check.md`. Model: `ops/finance_model.py`.

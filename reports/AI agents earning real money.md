@@ -1,3 +1,5 @@
+> **Status (2026-10-08):** background research. Where it differs from `PLAN.md` (v4), the plan wins: it runs the bot via `claude -p` on the Max plan's API credits and subscription, not paid APIs, and uses the corrected numbers.
+
 # Agents earn only where money already waits
 
 As of October 2026, no independently verified case exists of a largely autonomous AI agent netting $200 a month from customers it found on its own. Every real-world agent business that published numbers either lost money or earned trivial sums. Andon Labs' AI-run San Francisco store was down an estimated $40,000–$62,000 of its $100,000 budget by September 2026. Moneylab has $5 of outside revenue against about $200 a month of API spend. An agent at dfdx labs earned $1.54 on about $7,000 of tokens. At least half a dozen 2026 "build it and sell it" agents finished between $0 and $54. The headline figures attached to AI agents came from somewhere else: human attention (Truth Terminal's $50,000 gift, AI Village's donors), corporate teams that reviewed every output (XBOW, the $4M AIxCC prize), or fraud (Michael Smith's AI-music streaming scheme, which earned him 18 months in prison).
