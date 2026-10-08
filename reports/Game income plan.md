@@ -65,3 +65,55 @@ likelier than not.
 | 1 h | Play the week's build and give design notes |
 | 0.5 h | Approve and upload (accounts, tax forms and ID stay with the owner) |
 | 0.5 h | Contest sign-off when one is open |
+
+## Update: shiteven.fun comes first
+
+The owner already has a finished multiplayer .io game, shiteven.fun. It makes more
+sense to monetize that than to build new games. The research is in:
+- `research_notes/Game income research/io_game_monetization.md`
+- `research_notes/Game income research/shiteven_policy_fit.md`
+
+**Where the money is.** CrazyGames is the realistic route.
+- It accepts self-hosted multiplayer servers and has no exclusivity requirement.
+- Every game goes through a 7–21 day trial with ads off. Retention and how many
+  visitors start playing decide whether it goes live with ads; most games don't pass.
+- Ads on the game's own domain don't pay at its current traffic. Premium ad
+  networks want 100k–500k pageviews a month, and Playwire and Freestar ban profanity.
+
+**Why the game needs a separate portal build:**
+- CrazyGames requires a PEGI 12 rating, which allows only mild language.
+- Slot machines now push a game to PEGI 18, so Sewer Slots must go from that build.
+- Poki bans gambling and open chat.
+- Poop humour itself passes: portals host Poop Clicker, Royal Flush Merge and Skibidi
+  games. Every such title uses a euphemism, though; none contains a swear word.
+
+So the plan is a "clean" build from the same code:
+- a renamed title, with "shit" also removed from achievement and boss names;
+- emote-only chat;
+- no slots, and probably no worm stock market;
+- no public AI API links.
+
+shiteven.fun itself stays as it is.
+
+**Engineering (Claude does it):**
+- Split the single world into capped rooms.
+- Label bots honestly. Mope.io's fake "full" servers coincided with its decline.
+- Add the CrazyGames SDK: rooms, invite links, instant multiplayer.
+- Run a load test.
+- Add a neutral age screen on shiteven.fun, with preset chat only for under-13s, and
+  update its privacy policy for the amended COPPA rule (compliance date April 22, 2026).
+- Never let players buy the slot currency. California AB 831 and *Kater v. Churchill
+  Downs* (a federal appeals case under Washington law) make paid slot currency a
+  gambling risk.
+
+**What it takes:**
+- About 45k–215k portal plays a month, roughly 10–50 average concurrent players,
+  for $200/month.
+- Best case is 3–4 months to the first $200 month; realistically 6+ months.
+- Costs about $15/month for a server.
+
+**Risks:**
+- The game fails the trial.
+- Rooms are empty at launch.
+- Ad rates in the research are old or anecdotal.
+- Income decays without content updates.
