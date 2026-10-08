@@ -1,11 +1,14 @@
 name: Forecast bot - tournament
 
-# Hourly, offset off the hour. Fall 2026 questions stay open for ~3 hours, so
-# hourly catches each one with retries to spare while staying inside the
-# private-repo Actions allowance (a 20-minute cron would exceed it).
+# Every 30 minutes, offset off the hour. Tournament questions are normally open
+# for only ~1.5 hours, so this gives each question about three chances even
+# when GitHub delays scheduled runs, while staying inside the private-repo
+# allowance of 2,000 Actions minutes a month (a 20-minute cron would exceed it).
+# For extra reliability, an external scheduler may also call workflow_dispatch;
+# the concurrency group serializes overlapping runs.
 on:
   schedule:
-    - cron: "13 * * * *"
+    - cron: "7,37 * * * *"
   workflow_dispatch:
 
 concurrency:
@@ -15,7 +18,7 @@ concurrency:
 jobs:
   forecast:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 28
     # Off until the owner sets the repository variable BOT_ENABLED=true (skipped
     # jobs cost no Actions minutes); set it to anything else to pause the bot.
     if: vars.BOT_ENABLED == 'true'
@@ -25,6 +28,7 @@ jobs:
     env:
       METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
       ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
@@ -34,13 +38,16 @@ jobs:
       REASONING_EFFORT: ${{ vars.REASONING_EFFORT }}
       PREDICTIONS_PER_QUESTION: ${{ vars.PREDICTIONS_PER_QUESTION }}
       MAX_COST_PER_RUN_USD: ${{ vars.MAX_COST_PER_RUN_USD }}
-      RUN_MINIBENCH: ${{ vars.RUN_MINIBENCH }}
+      # MiniBench roughly doubles forecasting minutes, which would exceed the
+      # private-repo allowance; enable it (vars.RUN_MINIBENCH=true) once the repo
+      # is public or has a payment method with a spending limit.
+      RUN_MINIBENCH: ${{ vars.RUN_MINIBENCH || 'false' }}
     steps:
       - name: Skip until secrets are configured
         id: ready
         working-directory: .
         run: |
-          if [ -n "$METACULUS_TOKEN" ] && { [ -n "$ANTHROPIC_API_KEY" ] || [ -n "$OPENROUTER_API_KEY" ]; }; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "METACULUS_TOKEN and an LLM key (ANTHROPIC_API_KEY or OPENROUTER_API_KEY) not set yet; nothing to do."; fi
+          if [ -n "$METACULUS_TOKEN" ] && { [ -n "$CLAUDE_CODE_OAUTH_TOKEN" ] || [ -n "$ANTHROPIC_API_KEY" ] || [ -n "$OPENROUTER_API_KEY" ]; }; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "METACULUS_TOKEN and a model credential (CLAUDE_CODE_OAUTH_TOKEN, ANTHROPIC_API_KEY or OPENROUTER_API_KEY) not set yet; nothing to do."; fi
       - uses: actions/checkout@v4
         if: steps.ready.outputs.ok == 'true'
       - uses: actions/setup-python@v5
@@ -62,6 +69,9 @@ jobs:
       - name: Install dependencies
         if: steps.ready.outputs.ok == 'true'
         run: poetry install --no-interaction --no-root
+      - name: Install Claude Code CLI (subscription backend)
+        if: steps.ready.outputs.ok == 'true' && env.CLAUDE_CODE_OAUTH_TOKEN != ''
+        run: npm install -g @anthropic-ai/claude-code@2.1.293
       - name: Forecast on open tournament and MiniBench questions
         if: steps.ready.outputs.ok == 'true'
         run: poetry run python run.py --mode tournament

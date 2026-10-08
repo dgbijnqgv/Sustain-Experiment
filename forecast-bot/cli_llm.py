@@ -50,10 +50,11 @@ class CliLlm(GeneralLlm):
         if self.backend == "claude-code":
             cmd = [os.getenv("CLAUDE_BIN", "claude"), "-p", "--output-format", "json", "--model", self.cli_model]
             if self.web_tools:
-                cmd += ["--allowedTools", "WebSearch,WebFetch", "--max-turns", os.getenv("CLI_RESEARCH_MAX_TURNS", "12")]
+                tools = "WebSearch,WebFetch"
+                cmd += ["--tools", tools, "--allowedTools", tools, "--max-turns", os.getenv("CLI_RESEARCH_MAX_TURNS", "12")]
             else:
-                # Pure reasoning call: no tools, one turn.
-                cmd += ["--disallowedTools", "Bash,Edit,Write,Read,WebSearch,WebFetch", "--max-turns", "1"]
+                # Pure reasoning call: no tools at all, one turn.
+                cmd += ["--tools", "", "--max-turns", "1"]
             return cmd
         cmd = [os.getenv("CODEX_BIN", "codex"), "exec", "--skip-git-repo-check", "--sandbox", "read-only",
                "--model", self.cli_model, "--output-last-message", output_file]

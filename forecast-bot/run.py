@@ -44,32 +44,52 @@ logger = logging.getLogger(__name__)
 # models can be swapped without a code change. `scripts/check_models.py`
 # verifies the configured IDs exist.
 #
-# Two ways to pay for the models:
-# - ANTHROPIC_API_KEY from a Console organization funded by the Max plan's
-#   monthly API credits (preferred: those credits are otherwise unused), or
-# - OPENROUTER_API_KEY (pay as you go, or Metaculus's donated credits).
-# Web research always needs AskNews or OpenRouter; Claude via the plain API has
-# no live search here.
+# Three ways to pay for the models, in order of preference:
+# - CLAUDE_CODE_OAUTH_TOKEN: Claude Code on the owner's Claude plan (`claude -p`),
+#   documented by Anthropic for CI and scripts; no per-token cost.
+# - ANTHROPIC_API_KEY: a Console key, e.g. funded by the plan's API credits.
+# - OPENROUTER_API_KEY: pay as you go, or Metaculus's donated credits.
+# With the API options, web research needs AskNews or OpenRouter.
 def use_anthropic() -> bool:
     return bool(os.getenv("ANTHROPIC_API_KEY", "").strip())
 
 
+def use_subscription_cli() -> bool:
+    """Claude Code logged in with the owner's plan (a token from `claude setup-token`)."""
+    return bool(os.getenv("CLAUDE_CODE_OAUTH_TOKEN", "").strip())
+
+
 def defaults() -> dict[str, str]:
+    if use_subscription_cli():
+        # Preferred: runs on the owner's Claude plan, so model calls cost no
+        # API money. Research uses Claude Code's own web search.
+        return {
+            **_shared_defaults(),
+            "FORECAST_MODELS": "claude-code/opus",
+            "RESEARCH_MODEL": "claude-code/sonnet",
+            "PARSER_MODEL": "claude-code/haiku",
+            "RUN_MINIBENCH": "true",
+        }
     anthropic = use_anthropic()
-    return {
+    return {**_shared_defaults(), **{
         # Opus-only: in Summer 2026 the unmodified template ranked 24th on Claude
         # Opus vs 35th on GPT-5.5, and Opus is also cheaper than GPT-5.5.
         "FORECAST_MODELS": "anthropic/claude-opus-5-5" if anthropic else "openrouter/anthropic/claude-opus-5.5",
         "RESEARCH_MODEL": "openrouter/perplexity/sonar-reasoning-pro",
         "PARSER_MODEL": "anthropic/claude-haiku-5-5" if anthropic else "openrouter/openai/gpt-5-mini",
+        # MiniBench pays ~$20 per 60-question round in expectation: below its
+        # cost on pay-as-you-go, worth it when plan credits cover it.
+        "RUN_MINIBENCH": "true" if anthropic else "false",
+    }}
+
+
+def _shared_defaults() -> dict[str, str]:
+    return {
         "REASONING_EFFORT": "high",
         "PREDICTIONS_PER_QUESTION": "5",
         "CLIP_MIN": "0.03",
         "CLIP_MAX": "0.97",
         "MAX_COST_PER_RUN_USD": "15",
-        # MiniBench pays ~$20 per 60-question round in expectation: below its
-        # cost on pay-as-you-go, worth it when plan credits cover it.
-        "RUN_MINIBENCH": "true" if anthropic else "false",
     }
 
 
@@ -183,13 +203,26 @@ def build_bot(publish: bool) -> EnsembleBot:
     )
 
 
+def print_counts_only(reports) -> None:
+    """Tournament logs must not show forecasts on open questions (no human, and
+    no maintenance agent, may react to them), so report counts and errors only."""
+    failed = [r for r in reports if isinstance(r, BaseException)]
+    print(f"Run finished: {len(reports) - len(failed)} forecast(s) submitted, {len(failed)} failed.")
+    for err in failed:
+        print(f"  error: {type(err).__name__}: {str(err)[:300]}")
+
+
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     parser = argparse.ArgumentParser(description="Run the ensemble forecasting bot")
     parser.add_argument("--mode", choices=["tournament", "test_questions"], default="tournament")
     parser.add_argument("--dry-run", action="store_true", help="Forecast without publishing to Metaculus")
     args = parser.parse_args()
     mode: Literal["tournament", "test_questions"] = args.mode
+    # In the tournament, keep forecasts and reasoning out of the logs.
+    logging.basicConfig(
+        level=logging.INFO if mode == "test_questions" else logging.WARNING,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
 
     check_environment(strict=True)
     publish = not args.dry_run
@@ -208,8 +241,11 @@ if __name__ == "__main__":
 
     with MonetaryCostManager(float(setting("MAX_COST_PER_RUN_USD"))) as cost:
         reports = asyncio.run(forecast_all())
-        logger.info(f"Run cost: ${cost.current_usage:.2f}")
+        logger.warning(f"Run cost (API-billed models only): ${cost.current_usage:.2f}")
 
+    if mode == "tournament":
+        print_counts_only(reports)
+        raise SystemExit(0)
     bot.log_report_summary(reports)
     print_run_summary_banner(
         reports,

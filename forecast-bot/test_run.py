@@ -13,6 +13,7 @@ ENV = {
     "ASKNEWS_CLIENT_ID": "",
     "ANTHROPIC_API_KEY": "",
     "OPENROUTER_API_KEY": "test-key",
+    "CLAUDE_CODE_OAUTH_TOKEN": "",
 }
 os.environ.setdefault("METACULUS_TOKEN", "test-token")
 
@@ -41,6 +42,20 @@ class EnsembleBotTest(unittest.TestCase):
         used = asyncio.run(go())
         self.assertEqual(used.count("openrouter/vendor/model-a"), 3)
         self.assertEqual(used.count("openrouter/vendor/model-b"), 2)
+
+    def test_subscription_token_selects_cli_backend(self):
+        with mock.patch.dict(os.environ, {"CLAUDE_CODE_OAUTH_TOKEN": "tok", "FORECAST_MODELS": "", "PARSER_MODEL": ""}):
+            self.assertEqual(run.setting("FORECAST_MODELS"), "claude-code/opus")
+            self.assertEqual(run.setting("RESEARCH_MODEL"), "claude-code/sonnet")
+            self.assertEqual(run.setting("RUN_MINIBENCH"), "true")
+            self.assertTrue(run.has_web_research())
+
+    def test_tournament_summary_hides_forecasts(self):
+        import io
+        from contextlib import redirect_stdout
+        with redirect_stdout(io.StringIO()) as out:
+            run.print_counts_only([object(), ValueError("boom")])
+        self.assertIn("1 forecast(s) submitted, 1 failed", out.getvalue())
 
     def test_non_default_purposes_unaffected(self):
         self.assertEqual(self.bot.get_llm("parser", "string_name"), run.setting("PARSER_MODEL"))

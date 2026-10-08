@@ -17,6 +17,7 @@ ENV = {
     "ANTHROPIC_API_KEY": "",
     "OPENROUTER_API_KEY": "",
     "ASKNEWS_CLIENT_ID": "",
+    "CLAUDE_CODE_OAUTH_TOKEN": "",
 }
 
 import run  # noqa: E402
@@ -42,7 +43,7 @@ class CliBackendTest(unittest.TestCase):
     def test_research_uses_web_tools_and_is_labelled(self):
         text = asyncio.run(self.bot.run_research(QUESTION))
         self.assertIn("## Web research", text)
-        self.assertTrue(any("WebSearch,WebFetch" in c for c in self.calls()))
+        self.assertTrue(any(c[c.index("--tools") + 1] == "WebSearch,WebFetch" for c in self.calls()))
 
     def test_full_binary_forecast_through_cli(self):
         report = asyncio.run(self.bot.forecast_question(QUESTION))
