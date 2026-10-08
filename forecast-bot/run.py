@@ -50,28 +50,32 @@ logger = logging.getLogger(__name__)
 # - OPENROUTER_API_KEY (pay as you go, or Metaculus's donated credits).
 # Web research always needs AskNews or OpenRouter; Claude via the plain API has
 # no live search here.
-USE_ANTHROPIC = bool(os.getenv("ANTHROPIC_API_KEY", "").strip())
+def use_anthropic() -> bool:
+    return bool(os.getenv("ANTHROPIC_API_KEY", "").strip())
 
-DEFAULTS = {
-    # Opus-only: in Summer 2026 the unmodified template ranked 24th on Claude
-    # Opus vs 35th on GPT-5.5, and Opus is also cheaper than GPT-5.5.
-    "FORECAST_MODELS": "anthropic/claude-opus-5-5" if USE_ANTHROPIC else "openrouter/anthropic/claude-opus-5.5",
-    "RESEARCH_MODEL": "openrouter/perplexity/sonar-reasoning-pro",
-    "PARSER_MODEL": "anthropic/claude-haiku-5-5" if USE_ANTHROPIC else "openrouter/openai/gpt-5-mini",
-    "REASONING_EFFORT": "high",
-    "PREDICTIONS_PER_QUESTION": "5",
-    "CLIP_MIN": "0.03",
-    "CLIP_MAX": "0.97",
-    "MAX_COST_PER_RUN_USD": "15",
-    # MiniBench pays ~$20 per 60-question round in expectation: below its cost
-    # on pay-as-you-go, but free money when the plan's API credits cover it.
-    "RUN_MINIBENCH": "true" if USE_ANTHROPIC else "false",
-}
+
+def defaults() -> dict[str, str]:
+    anthropic = use_anthropic()
+    return {
+        # Opus-only: in Summer 2026 the unmodified template ranked 24th on Claude
+        # Opus vs 35th on GPT-5.5, and Opus is also cheaper than GPT-5.5.
+        "FORECAST_MODELS": "anthropic/claude-opus-5-5" if anthropic else "openrouter/anthropic/claude-opus-5.5",
+        "RESEARCH_MODEL": "openrouter/perplexity/sonar-reasoning-pro",
+        "PARSER_MODEL": "anthropic/claude-haiku-5-5" if anthropic else "openrouter/openai/gpt-5-mini",
+        "REASONING_EFFORT": "high",
+        "PREDICTIONS_PER_QUESTION": "5",
+        "CLIP_MIN": "0.03",
+        "CLIP_MAX": "0.97",
+        "MAX_COST_PER_RUN_USD": "15",
+        # MiniBench pays ~$20 per 60-question round in expectation: below its
+        # cost on pay-as-you-go, worth it when plan credits cover it.
+        "RUN_MINIBENCH": "true" if anthropic else "false",
+    }
 
 
 def setting(name: str) -> str:
     value = os.getenv(name, "").strip()
-    return value or DEFAULTS[name]
+    return value or defaults()[name]
 
 
 def has_web_research() -> bool:

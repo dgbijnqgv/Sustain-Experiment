@@ -4,16 +4,20 @@ import json
 import os
 import pathlib
 import unittest
+from unittest import mock
 
 FAKE = pathlib.Path(__file__).parent / "tests_fake" / "claude"
 os.environ.setdefault("METACULUS_TOKEN", "test-token")
-os.environ["CLAUDE_BIN"] = str(FAKE)
-os.environ["FORECAST_MODELS"] = "claude-code/opus"
-os.environ["RESEARCH_MODEL"] = "claude-code/sonnet"
-os.environ["PARSER_MODEL"] = "claude-code/haiku"
-os.environ["PREDICTIONS_PER_QUESTION"] = "3"
-for k in ("ANTHROPIC_API_KEY", "OPENROUTER_API_KEY", "ASKNEWS_CLIENT_ID"):
-    os.environ.pop(k, None)
+ENV = {
+    "CLAUDE_BIN": str(FAKE),
+    "FORECAST_MODELS": "claude-code/opus",
+    "RESEARCH_MODEL": "claude-code/sonnet",
+    "PARSER_MODEL": "claude-code/haiku",
+    "PREDICTIONS_PER_QUESTION": "3",
+    "ANTHROPIC_API_KEY": "",
+    "OPENROUTER_API_KEY": "",
+    "ASKNEWS_CLIENT_ID": "",
+}
 
 import run  # noqa: E402
 from cli_llm import CliLlm  # noqa: E402
@@ -26,6 +30,9 @@ CALLS = pathlib.Path(str(FAKE) + ".calls")
 
 class CliBackendTest(unittest.TestCase):
     def setUp(self):
+        patcher = mock.patch.dict(os.environ, ENV)
+        patcher.start()
+        self.addCleanup(patcher.stop)
         CALLS.unlink(missing_ok=True)
         self.bot = run.build_bot(publish=False)
 

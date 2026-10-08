@@ -4,12 +4,17 @@ import os
 import unittest
 from unittest import mock
 
+ENV = {
+    "METACULUS_TOKEN": "test-token",
+    "FORECAST_MODELS": "openrouter/vendor/model-a, openrouter/vendor/model-b",
+    "RESEARCH_MODEL": "",
+    "PARSER_MODEL": "",
+    "PREDICTIONS_PER_QUESTION": "5",
+    "ASKNEWS_CLIENT_ID": "",
+    "ANTHROPIC_API_KEY": "",
+    "OPENROUTER_API_KEY": "test-key",
+}
 os.environ.setdefault("METACULUS_TOKEN", "test-token")
-os.environ["FORECAST_MODELS"] = "openrouter/vendor/model-a, openrouter/vendor/model-b"
-os.environ["PREDICTIONS_PER_QUESTION"] = "5"
-os.environ.pop("ASKNEWS_CLIENT_ID", None)
-os.environ.pop("ANTHROPIC_API_KEY", None)
-os.environ["OPENROUTER_API_KEY"] = "test-key"
 
 import run  # noqa: E402
 from forecasting_tools import BinaryQuestion  # noqa: E402
@@ -19,6 +24,9 @@ QUESTION = BinaryQuestion(question_text="Will X happen?", page_url="https://exam
 
 class EnsembleBotTest(unittest.TestCase):
     def setUp(self):
+        patcher = mock.patch.dict(os.environ, ENV)
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.bot = run.build_bot(publish=False)
 
     def test_predictions_rotate_across_models(self):
