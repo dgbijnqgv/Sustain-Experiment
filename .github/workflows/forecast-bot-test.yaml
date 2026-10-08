@@ -52,6 +52,8 @@ jobs:
         run: poetry run python -m unittest test_run -v
       - name: Check model IDs on OpenRouter
         run: poetry run python scripts/check_models.py
+      - name: Price sheet (for cost modelling)
+        run: poetry run python scripts/check_models.py --list
       - name: Forecast on bot-testing-area
         if: env.METACULUS_TOKEN != '' && env.OPENROUTER_API_KEY != ''
         run: poetry run python run.py --mode test_questions ${{ inputs.publish && '' || '--dry-run' }}

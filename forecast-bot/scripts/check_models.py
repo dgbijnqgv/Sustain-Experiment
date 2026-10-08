@@ -14,6 +14,15 @@ from run import setting  # noqa: E402
 with urllib.request.urlopen("https://openrouter.ai/api/v1/models", timeout=30) as resp:
     catalogue = {m["id"]: m for m in json.load(resp)["data"]}
 
+if "--list" in sys.argv:
+    # Price sheet for cost modelling: frontier and cheap candidates.
+    patterns = ("anthropic/claude", "openai/gpt-5", "google/gemini-3", "deepseek/", "x-ai/grok-4", "qwen/qwen3", "perplexity/")
+    for model_id in sorted(catalogue):
+        if model_id.startswith(patterns) and ":" not in model_id:
+            p = catalogue[model_id].get("pricing", {})
+            print(f"{model_id:55s} in ${float(p.get('prompt', 0) or 0) * 1e6:7.2f}/M  out ${float(p.get('completion', 0) or 0) * 1e6:7.2f}/M  req ${float(p.get('request', 0) or 0):.4f}")
+    sys.exit(0)
+
 configured = [m.strip() for m in setting("FORECAST_MODELS").split(",") if m.strip()]
 configured += [setting("RESEARCH_MODEL"), setting("PARSER_MODEL")]
 
