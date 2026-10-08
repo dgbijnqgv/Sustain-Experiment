@@ -54,6 +54,17 @@ class CliBackendTest(unittest.TestCase):
         reasoning_calls = [c for c in self.calls() if "opus" in c]
         self.assertTrue(all("--max-turns" in c and c[c.index("--max-turns") + 1] == "1" for c in reasoning_calls))
 
+    def test_falls_back_from_exhausted_credits_to_subscription(self):
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "exhausted", "CLAUDE_CODE_OAUTH_TOKEN": "tok"}):
+            text = asyncio.run(CliLlm("claude-code/opus").invoke("Probability?"))
+        self.assertIn("Probability: 37%", text)
+        self.assertEqual([c[-1] for c in self.calls()], ["AUTH=sub"])  # the exhausted API call exits before logging
+
+    def test_each_call_gets_exactly_one_credential(self):
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "key", "CLAUDE_CODE_OAUTH_TOKEN": "tok"}):
+            asyncio.run(CliLlm("claude-code/opus").invoke("Probability?"))
+        self.assertEqual([c[-1] for c in self.calls()], ["AUTH=api"])
+
     def test_cli_error_is_raised(self):
         llm = CliLlm("claude-code/opus")
         os.environ["CLAUDE_BIN"] = "/bin/false"

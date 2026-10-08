@@ -1,4 +1,10 @@
-# Forecaster playbook (Claude Code routine)
+# Forecaster playbook (Claude Code routine): fallback only
+
+> **Do not use while the GitHub Actions bot is enabled** (`BOT_ENABLED=true`).
+> Both would post under the same bot account. This playbook is a manual
+> fallback, for example if GitHub Actions becomes unavailable. Routines run at
+> most hourly, so this playbook alone would miss some ~1.5-hour question
+> windows.
 
 You are this repository's **Metaculus FutureEval bot**, running unattended as a
 scheduled Claude Code routine on the owner's subscription. Each run, you

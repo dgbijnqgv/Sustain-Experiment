@@ -55,14 +55,16 @@ def use_anthropic() -> bool:
 
 
 def use_subscription_cli() -> bool:
-    """Claude Code logged in with the owner's plan (a token from `claude setup-token`)."""
-    return bool(os.getenv("CLAUDE_CODE_OAUTH_TOKEN", "").strip())
+    """Claude Code via `claude -p`, paid by the plan's API credits
+    (ANTHROPIC_API_KEY) and/or the plan itself (CLAUDE_CODE_OAUTH_TOKEN)."""
+    return bool(os.getenv("CLAUDE_CODE_OAUTH_TOKEN", "").strip()) or use_anthropic()
 
 
 def defaults() -> dict[str, str]:
     if use_subscription_cli():
-        # Preferred: runs on the owner's Claude plan, so model calls cost no
-        # API money. Research uses Claude Code's own web search.
+        # Preferred: Claude Code paid by the plan's included API credits first,
+        # then the plan itself (see cli_llm.py). Research uses Claude Code's
+        # own web search, so no separate search service is needed.
         return {
             **_shared_defaults(),
             "FORECAST_MODELS": "claude-code/opus",
@@ -70,16 +72,16 @@ def defaults() -> dict[str, str]:
             "PARSER_MODEL": "claude-code/haiku",
             "RUN_MINIBENCH": "true",
         }
-    anthropic = use_anthropic()
+    # OpenRouter (pay as you go, or Metaculus's donated credits).
     return {**_shared_defaults(), **{
         # Opus-only: in Summer 2026 the unmodified template ranked 24th on Claude
         # Opus vs 35th on GPT-5.5, and Opus is also cheaper than GPT-5.5.
-        "FORECAST_MODELS": "anthropic/claude-opus-5-5" if anthropic else "openrouter/anthropic/claude-opus-5.5",
+        "FORECAST_MODELS": "openrouter/anthropic/claude-opus-5.5",
         "RESEARCH_MODEL": "openrouter/perplexity/sonar-reasoning-pro",
-        "PARSER_MODEL": "anthropic/claude-haiku-5-5" if anthropic else "openrouter/openai/gpt-5-mini",
-        # MiniBench pays ~$20 per 60-question round in expectation: below its
-        # cost on pay-as-you-go, worth it when plan credits cover it.
-        "RUN_MINIBENCH": "true" if anthropic else "false",
+        "PARSER_MODEL": "openrouter/openai/gpt-5-mini",
+        # MiniBench pays ~$20 per 60-question round in expectation, below its
+        # pay-as-you-go cost.
+        "RUN_MINIBENCH": "false",
     }}
 
 
@@ -90,6 +92,10 @@ def _shared_defaults() -> dict[str, str]:
         "CLIP_MIN": "0.03",
         "CLIP_MAX": "0.97",
         "MAX_COST_PER_RUN_USD": "15",
+        # Season tournament IDs change three times a year (next: Spring 2027,
+        # starting ~January). Empty means forecasting-tools' built-in current IDs.
+        "TOURNAMENT_ID": "",
+        "MINIBENCH_ID": "",
     }
 
 
@@ -129,6 +135,9 @@ _forecaster: contextvars.ContextVar[GeneralLlm | None] = contextvars.ContextVar(
 
 class EnsembleBot(FallTemplateBot2026):
     _max_concurrent_questions = 2
+    # The parent builds its semaphore from its own class attribute, so it must
+    # be rebuilt here for the higher limit to take effect.
+    _concurrency_limiter = asyncio.Semaphore(_max_concurrent_questions)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -203,13 +212,63 @@ def build_bot(publish: bool) -> EnsembleBot:
     )
 
 
+def _retry_comment_posts() -> None:
+    """The template posts the forecast first and the required reasoning comment
+    second. A forecast without its comment is still marked answered and never
+    revisited, so retry the comment hard rather than lose eligibility."""
+    import time
+
+    original = MetaculusClient.post_question_comment
+    if getattr(original, "_retrying", False):
+        return
+
+    def post_with_retry(self, *args, **kwargs):
+        for attempt in range(4):
+            try:
+                return original(self, *args, **kwargs)
+            except Exception:
+                if attempt == 3:
+                    raise
+                time.sleep(5 * 2 ** attempt)
+
+    post_with_retry._retrying = True
+    MetaculusClient.post_question_comment = post_with_retry
+
+
+class _MaskNumbers(logging.Filter):
+    """Tournament logs must not reveal forecasts. Errors from the forecasting
+    library can quote model output, so mask every digit in log messages."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        import re
+
+        record.msg = re.sub(r"\d", "#", record.getMessage())
+        record.args = ()
+        return True
+
+
+def check_metaculus_access(client) -> None:
+    """Fail in seconds, not minutes of retries, when the token is missing or bad."""
+    import requests
+
+    # A single direct request: the client's own helpers retry for minutes.
+    try:
+        response = requests.get(f"{client.base_url}/users/me", timeout=20, **client._get_auth_headers())
+    except requests.RequestException as e:
+        raise SystemExit(f"Metaculus API unreachable ({type(e).__name__}); stopping.")
+    if response.status_code != 200:
+        raise SystemExit(f"Metaculus API rejected METACULUS_TOKEN (HTTP {response.status_code}); stopping.")
+
+
 def print_counts_only(reports) -> None:
     """Tournament logs must not show forecasts on open questions (no human, and
     no maintenance agent, may react to them), so report counts and errors only."""
     failed = [r for r in reports if isinstance(r, BaseException)]
     print(f"Run finished: {len(reports) - len(failed)} forecast(s) submitted, {len(failed)} failed.")
     for err in failed:
-        print(f"  error: {type(err).__name__}: {str(err)[:300]}")
+        import re
+
+        print(f"  error: {type(err).__name__}: {re.sub(r'[0-9]', '#', str(err))[:300]}")
 
 
 if __name__ == "__main__":
@@ -223,20 +282,27 @@ if __name__ == "__main__":
         level=logging.INFO if mode == "test_questions" else logging.WARNING,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
+    if mode == "tournament":
+        for handler in logging.getLogger().handlers:
+            handler.addFilter(_MaskNumbers())
+    _retry_comment_posts()
 
     check_environment(strict=True)
     publish = not args.dry_run
     print_startup_banner(mode, will_publish=publish)
     bot = build_bot(publish)
     client = MetaculusClient()
+    check_metaculus_access(client)
+    main_id = setting("TOURNAMENT_ID") or client.CURRENT_AI_COMPETITION_ID
+    mini_id = setting("MINIBENCH_ID") or client.CURRENT_MINIBENCH_ID
 
     async def forecast_all():
         if mode == "test_questions":
             bot.skip_previously_forecasted_questions = False
             return await bot.forecast_on_tournament("bot-testing-area", return_exceptions=True)
-        reports = await bot.forecast_on_tournament(client.CURRENT_AI_COMPETITION_ID, return_exceptions=True)
+        reports = await bot.forecast_on_tournament(main_id, return_exceptions=True)
         if setting("RUN_MINIBENCH").lower() == "true":
-            reports += await bot.forecast_on_tournament(client.CURRENT_MINIBENCH_ID, return_exceptions=True)
+            reports += await bot.forecast_on_tournament(mini_id, return_exceptions=True)
         return reports
 
     with MonetaryCostManager(float(setting("MAX_COST_PER_RUN_USD"))) as cost:

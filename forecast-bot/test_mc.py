@@ -61,13 +61,16 @@ class AggregateTest(unittest.TestCase):
 
 class CoverageTest(unittest.TestCase):
     def test_counts_only(self):
-        qs = [SimpleNamespace(already_forecasted=f, state=SimpleNamespace(value=st))
-              for f, st in ((True, "open"), (False, "closed"), (True, "resolved"), (True, "closed"))]
+        t = lambda d: datetime(2026, 10, d, tzinfo=timezone.utc)
+        qs = [SimpleNamespace(already_forecasted=f, state=SimpleNamespace(value=st), open_time=t(d))
+              for f, st, d in ((False, "resolved", 1), (True, "open", 12), (False, "closed", 11),
+                               (True, "resolved", 10), (True, "closed", 13))]
         client = mock.MagicMock()
         client.get_questions_matching_filter = mock.AsyncMock(return_value=qs)
         with mock.patch("forecasting_tools.MetaculusClient", return_value=client), redirect_stdout(io.StringIO()) as out:
             mc.cmd_coverage(SimpleNamespace(tournament="main"))
         result = json.loads(out.getvalue())
+        # The question from before the bot's first answer (Oct 1) is excluded.
         self.assertEqual((result["questions"], result["answered"], result["coverage"]), (4, 3, 0.75))
         self.assertEqual(result["by_state"]["closed:missed"], 1)
         self.assertNotIn("probability", out.getvalue())

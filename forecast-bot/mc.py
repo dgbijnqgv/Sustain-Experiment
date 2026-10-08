@@ -39,12 +39,15 @@ TOURNAMENTS = {"test": "bot-testing-area"}
 
 
 def tournament_id(name: str):
+    import os
+
     from forecasting_tools import MetaculusClient
 
+    # Overrides for when a new season starts before forecasting-tools updates.
     if name == "main":
-        return MetaculusClient.CURRENT_AI_COMPETITION_ID
+        return os.getenv("TOURNAMENT_ID") or MetaculusClient.CURRENT_AI_COMPETITION_ID
     if name == "minibench":
-        return MetaculusClient.CURRENT_MINIBENCH_ID
+        return os.getenv("MINIBENCH_ID") or MetaculusClient.CURRENT_MINIBENCH_ID
     return TOURNAMENTS[name]
 
 
@@ -99,6 +102,13 @@ def cmd_coverage(args) -> None:
     api_filter = ApiFilter(allowed_tournaments=[tournament_id(args.tournament)],
                            allowed_statuses=["open", "closed", "resolved"])
     questions = asyncio.run(client.get_questions_matching_filter(api_filter))
+    # Count only questions that opened after the bot's first answer, so the
+    # weeks before launch don't depress coverage.
+    opened = [getattr(q, "open_time", None) for q in questions if q.already_forecasted]
+    opened = [t for t in opened if t is not None]
+    if opened:
+        start = min(opened)
+        questions = [q for q in questions if getattr(q, "open_time", None) is None or q.open_time >= start]
     answered = sum(1 for q in questions if q.already_forecasted)
     status = {}
     for q in questions:
@@ -211,8 +221,10 @@ def cmd_submit(args) -> None:
     if args.dry_run:
         print(f"DRY RUN {q.page_url}: {summary}")
         return
-    action()
+    # Comment first: a forecast without its required comment would count as
+    # answered and never be revisited; a comment without a forecast is retried.
     client.post_question_comment(q.id_of_post, f["comment"])
+    action()
     print(f"SUBMITTED {q.page_url}: {summary}")
 
 

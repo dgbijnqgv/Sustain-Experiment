@@ -13,8 +13,6 @@ jobs:
     defaults:
       run:
         working-directory: forecast-bot
-    env:
-      METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -31,6 +29,10 @@ jobs:
           key: venv-${{ runner.os }}-${{ steps.py.outputs.python-version }}-${{ hashFiles('forecast-bot/poetry.lock') }}
       - run: poetry install --no-interaction --no-root
       - name: Coverage (counts only)
+        env:
+          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
+          TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
+          MINIBENCH_ID: ${{ vars.MINIBENCH_ID }}
         run: |
           poetry run python mc.py coverage --tournament main 2>/dev/null
           poetry run python mc.py coverage --tournament minibench 2>/dev/null

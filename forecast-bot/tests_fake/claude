@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 # Fake `claude -p` for offline tests: answers from the prompt on stdin.
-import json, sys
+import json, os, sys
 prompt = sys.stdin.read()
+if os.environ.get("ANTHROPIC_API_KEY") == "exhausted":
+    print(json.dumps({"type": "result", "subtype": "success", "is_error": True, "result": "Credit balance is too low"}))
+    sys.exit(1)
 args = sys.argv[1:]
-log = open(__file__ + ".calls", "a"); log.write(json.dumps(args) + "\n"); log.close()
+log = open(__file__ + ".calls", "a")
+log.write(json.dumps(args + ["AUTH=" + ("api" if os.environ.get("ANTHROPIC_API_KEY") else "sub" if os.environ.get("CLAUDE_CODE_OAUTH_TOKEN") else "none")]) + "\n")
+log.close()
 if "prediction_in_decimal" in prompt:
     out = '{"prediction_in_decimal": 0.37}'
 elif "WebSearch" in " ".join(args):
