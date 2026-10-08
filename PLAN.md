@@ -76,53 +76,64 @@ heavily concentrated, and new Actors start at zero users.
 - AI app stores
 - Code bounties, unless a maintainer explicitly invites them
 
-## Odds (honest)
+## Economics and odds (see `reports/Plan financial and policy check.md`)
 
-- **Combined, by mid-2027:** about a 1-in-4 chance of a sustained $200 a month.
-- **Before February 2027:** income will be near $0, whatever happens.
+| | Expected |
+|---|---|
+| Bot, Fall 2026 (main tournament + MiniBench) | ~$450 prize, paid ~Feb–Apr 2027 (range $0–$1,200) |
+| Bot cash cost | **$0**: funded by the Max plan's included $200/month API credits |
+| Tender feed, months 1–6 | ~$12/month (range $0–$96) |
+| Claude tokens, building + operating | ~$0.66 one-off + ~$0.20/month of subscription capacity |
+| **Total** | **~$120/month pre-tax, ~$90 after tax** |
 
-Judge progress by leading indicators:
+This is below the $200 goal in expectation. The chance of a $200/month-rate
+season is about 15–20%, which needs a top-20 bot finish.
 
+**Leading indicators:**
 - The bot's average peer score on resolved questions should be at least +5 at
   90% or more coverage.
 - The Actors' 30-day user counts.
 
 **Stop rules:**
-
-- **Day 60:** fewer than 10 Actor users means no new Actors.
-- **Day 120:** under $20 of revenue means a pivot proposal to the owner.
+- Day 60: fewer than 10 Actor users means no new Actors.
+- Day 120: under $20 of Actor revenue means a pivot proposal.
+- December: a bot score below +5 means turning MiniBench off.
 
 ## Budget
 
-| Item | Cost | Status |
-|---|---|---|
-| GitHub Actions | $0 (private-repo allowance; hourly cron sized to fit) | — |
-| Apify | $0 (free plan) | — |
-| Forecast-bot model spend, if Metaculus credits don't arrive | ~$130–$250 for the Fall season | **Needs owner approval (>$100).** Start with up to $100 on OpenRouter with a key spending limit; top up only after approval. |
+| Item | Cost |
+|---|---|
+| Bot models | $0 cash (Max plan API credits; ~$400 of the ~$600 available this season) |
+| Web research | $0 (AskNews free tier); optional OpenRouter ~$30/season |
+| GitHub Actions, Apify | $0 (free tiers) |
+| **Cash requested** | **$0** (no approval needed) |
 
 ## Owner's one-time setup
 
 Everything runs in GitHub, so this container's network settings no longer
 matter.
 
-**A. Forecasting bot (about 30 minutes; do this first)**
+**A. Forecasting bot (about 30 minutes; do this first, since each week of delay costs ~12–15% of the prize)**
 
 1. At https://www.metaculus.com/futureeval/participate/, create a Metaculus
    account, then a **bot account**, then its **token**.
-2. Fill in the first section of the participation form, and request LLM
-   credits there: https://forms.gle/aQdYMq9Pisrf1v7d8
-3. *(Optional, free)* Email contact@asknews.app for AskNews builder access,
-   1,000 calls a month.
-4. Get an **OpenRouter API key**: either the donated-credit key, or your own
-   at openrouter.ai with up to $100 of credit and a key spending limit.
+2. Fill in the first section of the participation form:
+   https://forms.gle/aQdYMq9Pisrf1v7d8
+3. **Claim the Max plan's API credits.** Go to claude.ai → Settings → Billing,
+   and link a Console organization (this needs 7 days on the plan). In that
+   Console organization, create an **API key**. Optionally set a monthly spend
+   limit of $200 there.
+4. **For web research,** either email contact@asknews.app for free AskNews
+   builder access (1,000 calls a month), or create an OpenRouter key with
+   about $10–30 of credit.
 5. In GitHub, open this repo → Settings → Secrets and variables → Actions.
-   - Under **Secrets**, add `METACULUS_TOKEN`, `OPENROUTER_API_KEY`, and
-     optionally `ASKNEWS_CLIENT_ID` and `ASKNEWS_SECRET`.
+   - Under **Secrets**, add:
+     - `METACULUS_TOKEN`
+     - `ANTHROPIC_API_KEY`
+     - `ASKNEWS_CLIENT_ID` and `ASKNEWS_SECRET`, and/or `OPENROUTER_API_KEY`
    - Under **Variables**, add `BOT_ENABLED` = `true`.
-6. Reply "bot ready". I then:
-   - run the test workflow against Metaculus's unscored test area;
-   - confirm the hourly tournament runs;
-   - start the twice-weekly maintenance routine.
+6. Reply "bot ready". If you don't, the next scheduled check-in picks it up
+   anyway.
 
 **B. Apify (about 20 minutes)**
 

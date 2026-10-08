@@ -25,6 +25,7 @@ jobs:
     env:
       METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
       ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
       FORECAST_MODELS: ${{ vars.FORECAST_MODELS }}
@@ -39,7 +40,7 @@ jobs:
         id: ready
         working-directory: .
         run: |
-          if [ -n "$METACULUS_TOKEN" ] && [ -n "$OPENROUTER_API_KEY" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "METACULUS_TOKEN / OPENROUTER_API_KEY not set yet; nothing to do."; fi
+          if [ -n "$METACULUS_TOKEN" ] && { [ -n "$ANTHROPIC_API_KEY" ] || [ -n "$OPENROUTER_API_KEY" ]; }; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "METACULUS_TOKEN and an LLM key (ANTHROPIC_API_KEY or OPENROUTER_API_KEY) not set yet; nothing to do."; fi
       - uses: actions/checkout@v4
         if: steps.ready.outputs.ok == 'true'
       - uses: actions/setup-python@v5

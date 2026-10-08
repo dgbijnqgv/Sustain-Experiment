@@ -41,27 +41,40 @@ logger = logging.getLogger(__name__)
 
 # Defaults are overridden by GitHub repository variables of the same name, so
 # models can be swapped without a code change. `scripts/check_models.py`
-# verifies the IDs against OpenRouter's catalogue.
+# verifies the configured IDs exist.
+#
+# Two ways to pay for the models:
+# - ANTHROPIC_API_KEY from a Console organization funded by the Max plan's
+#   monthly API credits (preferred: those credits are otherwise unused), or
+# - OPENROUTER_API_KEY (pay as you go, or Metaculus's donated credits).
+# Web research always needs AskNews or OpenRouter; Claude via the plain API has
+# no live search here.
+USE_ANTHROPIC = bool(os.getenv("ANTHROPIC_API_KEY", "").strip())
+
 DEFAULTS = {
     # Opus-only: in Summer 2026 the unmodified template ranked 24th on Claude
-    # Opus vs 35th on GPT-5.5, and Opus is the cheaper of the two on OpenRouter.
-    "FORECAST_MODELS": "openrouter/anthropic/claude-opus-5.5",
+    # Opus vs 35th on GPT-5.5, and Opus is also cheaper than GPT-5.5.
+    "FORECAST_MODELS": "anthropic/claude-opus-5-5" if USE_ANTHROPIC else "openrouter/anthropic/claude-opus-5.5",
     "RESEARCH_MODEL": "openrouter/perplexity/sonar-reasoning-pro",
-    "PARSER_MODEL": "openrouter/openai/gpt-5-mini",
+    "PARSER_MODEL": "anthropic/claude-haiku-5-5" if USE_ANTHROPIC else "openrouter/openai/gpt-5-mini",
     "REASONING_EFFORT": "high",
     "PREDICTIONS_PER_QUESTION": "5",
     "CLIP_MIN": "0.03",
     "CLIP_MAX": "0.97",
     "MAX_COST_PER_RUN_USD": "15",
-    # MiniBench pays ~$20 per 60-question round in expectation, below its API
-    # cost at this configuration, so it is opt-in.
-    "RUN_MINIBENCH": "false",
+    # MiniBench pays ~$20 per 60-question round in expectation: below its cost
+    # on pay-as-you-go, but free money when the plan's API credits cover it.
+    "RUN_MINIBENCH": "true" if USE_ANTHROPIC else "false",
 }
 
 
 def setting(name: str) -> str:
     value = os.getenv(name, "").strip()
     return value or DEFAULTS[name]
+
+
+def has_web_research() -> bool:
+    return bool(os.getenv("OPENROUTER_API_KEY", "").strip()) and setting("RESEARCH_MODEL").startswith("openrouter/")
 
 
 def forecaster_llms() -> list[GeneralLlm]:
@@ -108,12 +121,15 @@ class EnsembleBot(FallTemplateBot2026):
                 tasks["News (AskNews)"] = AskNewsSearcher().call_preconfigured_version(
                     "asknews/news-summaries", question.question_text
                 )
-            researcher = self.get_llm("researcher")
-            tasks["Web research"] = self.get_llm("researcher", "llm").invoke(
-                self._get_research_prompt(question, researcher)
-            )
+            if has_web_research():
+                researcher = self.get_llm("researcher")
+                tasks["Web research"] = self.get_llm("researcher", "llm").invoke(
+                    self._get_research_prompt(question, researcher)
+                )
             results = await asyncio.gather(*tasks.values(), return_exceptions=True)
 
+        if not tasks:
+            logger.error("No research source configured (set ASKNEWS_* or OPENROUTER_API_KEY).")
         sections = []
         for name, result in zip(tasks, results):
             if isinstance(result, BaseException):

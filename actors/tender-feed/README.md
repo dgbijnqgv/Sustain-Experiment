@@ -78,3 +78,14 @@ SAM.gov requires a free personal API key: sign in at sam.gov → Account Details
 **Can an AI agent use it?** Yes — call it through Apify's MCP server or API and feed the `summary` field to your model.
 
 **Something broken or a portal missing?** Open an issue on the Actor's Issues tab. Reports are triaged within a few days.
+
+## Data sources, licences and attribution
+
+This Actor is **unofficial** and is not affiliated with or endorsed by the European Union Publications Office, the UK Cabinet Office, or the US General Services Administration. It reads only their public APIs and passes notices through without changing their meaning.
+
+- **TED (Tenders Electronic Daily)** — © European Union, https://ted.europa.eu. Reused under Commission Decision 2011/833/EU on the reuse of Commission documents.
+- **UK Find a Tender and Contracts Finder** — Contains public sector information licensed under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
+- **SAM.gov** — US federal contract opportunity data from the public SAM.gov Opportunities API, fetched with your own API key.
+
+Each output row links back to the official notice (`url`); always check the official notice before bidding.
+

@@ -24,6 +24,7 @@ jobs:
     env:
       METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
       ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
       FORECAST_MODELS: ${{ vars.FORECAST_MODELS }}
@@ -55,5 +56,5 @@ jobs:
       - name: Price sheet (for cost modelling)
         run: poetry run python scripts/check_models.py --list
       - name: Forecast on bot-testing-area
-        if: env.METACULUS_TOKEN != '' && env.OPENROUTER_API_KEY != ''
+        if: env.METACULUS_TOKEN != '' && (env.ANTHROPIC_API_KEY != '' || env.OPENROUTER_API_KEY != '')
         run: poetry run python run.py --mode test_questions ${{ inputs.publish && '' || '--dry-run' }}

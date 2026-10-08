@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "public-tender-feed",
-    "title": "Public Tender Feed: EU TED + UK + SAM.gov (new & changed only)",
-    "description": "One normalized feed of government tenders from TED (EU), UK Find a Tender, UK Contracts Finder and SAM.gov. Filter by keyword, CPV, NAICS, country and value. Scheduled runs return only new or changed notices.",
+    "title": "Public Tender Feed: EU, UK & US procurement notices (new & changed only)",
+    "description": "Unofficial, normalized feed of government tenders from the public TED (EU), UK Find a Tender, UK Contracts Finder and SAM.gov data services. Filter by keyword, CPV, NAICS, country and value; scheduled runs return only new or changed notices.",
     "version": "0.1",
     "buildTag": "latest",
     "input": "./input_schema.json",
@@ -13,20 +13,58 @@
             "views": {
                 "overview": {
                     "title": "Tenders",
-                    "transformation": { "fields": ["changeType", "source", "title", "buyerName", "country", "deadlineAt", "value", "cpv", "naics", "url"] },
+                    "transformation": {
+                        "fields": [
+                            "changeType",
+                            "source",
+                            "title",
+                            "buyerName",
+                            "country",
+                            "deadlineAt",
+                            "value",
+                            "cpv",
+                            "naics",
+                            "url"
+                        ]
+                    },
                     "display": {
                         "component": "table",
                         "properties": {
-                            "changeType": { "label": "Change" },
-                            "source": { "label": "Source" },
-                            "title": { "label": "Title" },
-                            "buyerName": { "label": "Buyer" },
-                            "country": { "label": "Country" },
-                            "deadlineAt": { "label": "Deadline", "format": "date" },
-                            "value": { "label": "Value", "format": "object" },
-                            "cpv": { "label": "CPV", "format": "array" },
-                            "naics": { "label": "NAICS", "format": "array" },
-                            "url": { "label": "Link", "format": "link" }
+                            "changeType": {
+                                "label": "Change"
+                            },
+                            "source": {
+                                "label": "Source"
+                            },
+                            "title": {
+                                "label": "Title"
+                            },
+                            "buyerName": {
+                                "label": "Buyer"
+                            },
+                            "country": {
+                                "label": "Country"
+                            },
+                            "deadlineAt": {
+                                "label": "Deadline",
+                                "format": "date"
+                            },
+                            "value": {
+                                "label": "Value",
+                                "format": "object"
+                            },
+                            "cpv": {
+                                "label": "CPV",
+                                "format": "array"
+                            },
+                            "naics": {
+                                "label": "NAICS",
+                                "format": "array"
+                            },
+                            "url": {
+                                "label": "Link",
+                                "format": "link"
+                            }
                         }
                     }
                 }

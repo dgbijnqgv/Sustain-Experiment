@@ -58,15 +58,50 @@ APIFY_COMPUTE = 0.0             # free-plan credit covers our own test runs
 # Measured from this session (get_session usage) at API list prices.
 BUILD_API_EQUIVALENT = 26.26
 # A twice-weekly check-in that resumes the long session: ~15 tool calls x
-# ~150k cached context at $0.40/M, plus writes and output, ~$1.5 each.
+# 100-300k cached context at $0.20/M (Opus 5.5 cache read), plus cache writes
+# and output, ~$0.5-2 each.
 CHECKINS_PER_MONTH = 8.7
-CHECKIN_API_EQUIVALENT = (0.75, 1.5, 3.0)
-# What a dollar of API-priced usage costs on the subscription. A $200 Max plan
-# used to its weekly limits is commonly estimated at $1,500-$5,000 of API-priced
-# usage a month; refined by the policy research.
-SUBSCRIPTION_SHARE = (200 / 5000, 200 / 2500, 200 / 1500)
+CHECKIN_API_EQUIVALENT = (0.5, 1.0, 2.0)
+# What a dollar of API-priced usage costs on the subscription: a fully used
+# Max 20x plan is worth ~$1.74k-2.2k of API usage a week (third-party
+# measurements, Sep 2026), i.e. ~$7-9k a month for $200.
+SUBSCRIPTION_SHARE = (200 / 9000, 200 / 8000, 200 / 7000)
 
 TAX_RATE = 0.25                 # placeholder; depends on the owner's country
+
+
+# MiniBench: ~7 two-week $1k rounds left before January, ~60 questions each,
+# ~$20 expected per round for a full-coverage bot (report).
+MINIBENCH_ROUNDS, MINIBENCH_QUESTIONS, MINIBENCH_EV = 7, 60, 20
+# Web research via OpenRouter (Perplexity sonar-reasoning-pro) when paid for
+# separately; AskNews's free tier can replace it.
+RESEARCH_COST_PER_QUESTION = 0.04
+# Max 20x includes $200/month of Anthropic API credits (since 7 Oct 2026);
+# ~3 months of the season remain.
+PLAN_API_CREDITS = 200 * 3
+
+
+def funding_scenarios() -> None:
+    opus = BotConfig("Opus 5.5 x5", "opus", (0.35, 0.54, 0.80))
+    _, prize, _ = season_prize(opus)
+    _, main_cost, _ = season_cost(opus)
+    q = QUESTIONS_REMAINING["mid"]
+    mini_cost = MINIBENCH_ROUNDS * MINIBENCH_QUESTIONS * opus.cost_per_question[1]
+    mini_ev = MINIBENCH_ROUNDS * MINIBENCH_EV
+    research = (q + MINIBENCH_ROUNDS * MINIBENCH_QUESTIONS) * RESEARCH_COST_PER_QUESTION * (1 + OPENROUTER_FEE)
+    print("\nFUNDING SCENARIOS (Opus 5.5, Fall 2026 season)")
+    rows = [
+        ("A. Plan API credits + AskNews free (MiniBench on)", prize + mini_ev, 0.0,
+         f"model spend ${main_cost + mini_cost:,.0f} fits in ${PLAN_API_CREDITS} of otherwise-unused credits"),
+        ("A2. Plan API credits + OpenRouter research", prize + mini_ev, research, "research billed via OpenRouter"),
+        ("B. OpenRouter pay-as-you-go (MiniBench off)", prize, main_cost, "needs owner approval above $100"),
+        ("C. Metaculus donated credits", prize + mini_ev, 0.0, "amount and timing unknown"),
+    ]
+    for name, revenue, cash_cost, note in rows:
+        net = revenue - cash_cost
+        print(f"  {name}")
+        print(f"    expected prize ${revenue:,.0f}, cash cost ${cash_cost:,.0f}, net ${net:,.0f} pre-tax"
+              f" = ${net / 4:,.0f}/month; after {TAX_RATE:.0%} tax ${net * (1 - TAX_RATE) / 4:,.0f}/month  ({note})")
 
 
 def main() -> None:
@@ -85,6 +120,8 @@ def main() -> None:
         print(f"    net EV   ${net:,.0f} pre-tax, ${net * (1 - TAX_RATE):,.0f} after {TAX_RATE:.0%} tax"
               f" -> ${net * (1 - TAX_RATE) / 4:,.0f}/month over the 4-month season")
         print(f"    worst case: lose ${c_hi:,.0f} (no prize, high cost)")
+
+    funding_scenarios()
 
     print("\nAPIFY TENDER FEED (per month, months 1-6)")
     for k, gross in APIFY_MONTHLY_GROSS.items():

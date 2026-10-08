@@ -26,9 +26,28 @@ if "--list" in sys.argv:
 configured = [m.strip() for m in setting("FORECAST_MODELS").split(",") if m.strip()]
 configured += [setting("RESEARCH_MODEL"), setting("PARSER_MODEL")]
 
+anthropic_ids = None
+if os.getenv("ANTHROPIC_API_KEY"):
+    req = urllib.request.Request(
+        "https://api.anthropic.com/v1/models?limit=1000",
+        headers={"x-api-key": os.environ["ANTHROPIC_API_KEY"], "anthropic-version": "2023-06-01"},
+    )
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        anthropic_ids = {m["id"] for m in json.load(resp)["data"]}
+
 missing = False
 for full in configured:
     model_id = full.removeprefix("openrouter/")
+    if full.startswith("anthropic/"):
+        name = full.removeprefix("anthropic/")
+        if anthropic_ids is None:
+            print(f"skip   {full} (no ANTHROPIC_API_KEY to check against)")
+        elif name in anthropic_ids:
+            print(f"ok     {full} (Anthropic API)")
+        else:
+            missing = True
+            print(f"MISSING {full}. Available: {', '.join(sorted(anthropic_ids))}")
+        continue
     if not full.startswith("openrouter/"):
         print(f"skip   {full} (not an OpenRouter model)")
         continue

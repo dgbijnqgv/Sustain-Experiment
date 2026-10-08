@@ -9,7 +9,7 @@ Append-only log kept by the operator sessions, newest first.
 | Cash spent | $0 of $500 (owner approval needed above $100) |
 | Forecast bot: code | ✅ Built; offline tests and model-ID check pass in CI |
 | Forecast bot: Metaculus bot account, token, participation form | ⏳ Owner |
-| Forecast bot: OpenRouter key (donated credits or own, ≤$100 limit) | ⏳ Owner |
+| Forecast bot: Anthropic Console API key (Max plan credits) + AskNews or OpenRouter for research | ⏳ Owner |
 | Forecast bot: GitHub secrets + `BOT_ENABLED=true` | ⏳ Owner |
 | Tender feed Actor: code | ✅ Live-validated in CI against TED, FTS and CF |
 | Apify account, payout, `APIFY_TOKEN` secret | ⏳ Owner |
@@ -22,12 +22,25 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Proposals
 
-- **Forecast bot model budget:** up to $250 for the Fall 2026 season if
-  Metaculus's donated credits don't arrive. The estimate is $0.40–$0.75 per
-  question for about 320 remaining main-tournament questions, against a
-  central prize estimate of $300–$600. Awaiting owner approval; $0 spent.
+- ~~Forecast bot pay-as-you-go budget of up to $250~~: withdrawn 2026-10-08.
+  The Max plan's included API credits cover the bot. Pay-as-you-go would risk
+  $295 for an expected net of $137.
 
 ## Log
+
+### 2026-10-08: financial and policy check
+- Report: `reports/Plan financial and policy check.md`. Model: `ops/finance_model.py`.
+- **Expected value:** ~$120/month pre-tax, below the $200 goal. The bot's
+  cash cost is $0 on plan API credits.
+- **Claude tokens:**
+  - Building so far: $26.26 at API prices, about $0.66 of the subscription.
+  - Check-ins: about $0.20/month of the subscription.
+- **Policy:** all parties allow the setup. The one grey area is GitHub's
+  Actions "unrelated activity" clause; it is low burden and the
+  Metaculus-endorsed method.
+- **Bot:** now prefers ANTHROPIC_API_KEY, and MiniBench switches on with it.
+- **Tender feed:** listing marked unofficial, with TED and OGL v3 attribution
+  added.
 
 ### 2026-10-07: session 1 (continued)
 

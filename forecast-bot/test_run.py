@@ -8,6 +8,8 @@ os.environ.setdefault("METACULUS_TOKEN", "test-token")
 os.environ["FORECAST_MODELS"] = "openrouter/vendor/model-a, openrouter/vendor/model-b"
 os.environ["PREDICTIONS_PER_QUESTION"] = "5"
 os.environ.pop("ASKNEWS_CLIENT_ID", None)
+os.environ.pop("ANTHROPIC_API_KEY", None)
+os.environ["OPENROUTER_API_KEY"] = "test-key"
 
 import run  # noqa: E402
 from forecasting_tools import BinaryQuestion  # noqa: E402
@@ -46,6 +48,11 @@ class EnsembleBotTest(unittest.TestCase):
     def test_research_failure_falls_back_instead_of_skipping(self):
         researcher = self.bot.get_llm("researcher", "llm")
         with mock.patch.object(type(researcher), "invoke", side_effect=RuntimeError("search down")):
+            text = asyncio.run(self.bot.run_research(QUESTION))
+        self.assertIn("No research available", text)
+
+    def test_no_research_source_still_forecasts(self):
+        with mock.patch.dict(os.environ, {"OPENROUTER_API_KEY": ""}):
             text = asyncio.run(self.bot.run_research(QUESTION))
         self.assertIn("No research available", text)
 
