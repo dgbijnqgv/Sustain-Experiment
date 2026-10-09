@@ -5,17 +5,5 @@
     "reddit_post",
     "reddit_comment"
   ],
-  "tasks": [
-    {
-      "id": "2026-10-15-indiegames-video",
-      "not_before": "2026-10-15T04:30:00-07:00",
-      "action": "reddit_post",
-      "subreddit": "indiegames",
-      "kind": "video",
-      "video_url": "https://raw.githubusercontent.com/dgbijnqgv/Sustain-Experiment/claude/ai-revenue-generation-ume6vn/ops/clips/septic-lord.mp4",
-      "title": "The boss in my poop-themed .io game resurrects and eats loot to heal, so players have to race it for pickups",
-      "body": "",
-      "first_comment": "Shiteven, a free multiplayer browser game I made: https://shiteven.fun\nFive bosses with different kits; this one (Septic Lord) heals from pickups and comes back at half HP, so the fight is half dodging and half denying it loot."
-    }
-  ]
+  "tasks": []
 }

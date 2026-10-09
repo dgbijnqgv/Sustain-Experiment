@@ -51,6 +51,7 @@ After posting, stay for the first 1–2 hours and reply to every comment.
 - "Bug / it lagged" -> `Thanks, what device and browser? I'll look into it today.`
 - "Is it AI-made?" -> answer honestly, the same as your "Involvement" line.
 
-## Clips needed (you)
-1. A Septic Lord fight: resurrect plus healing from pickups, 15–30 s, vertical or 16:9.
-2. Optional: a faction raid succeeding or failing, under 15 s.
+## Clips
+Clips come from the owner's Codex clipping agent; see `OX_INBOX.md`. Video post titles
+are written from each clip's own description, so the r/indiegames and r/IndieGaming
+titles above are examples only.
