@@ -27,7 +27,18 @@ Append to `tasks`. Never edit or reuse the `id` of a task that already ran.
 }
 ```
 
-- `kind` is `link` (uses `url`) or `text` (uses `body`). Use `reddit_comment` with a
+- `kind` is `link` (uses `url`), `text` (uses `body`) or `video` (uses `video_url`).
+  Video tasks wait until the clip exists: Ox skips them, without marking them done,
+  while `video_url` returns 404. Use `reddit_comment` with a
   `thread_url` to comment in a thread.
 - Rules: one post per subreddit per month, spaced at least two days apart. Check the
   subreddit's self-promotion rules in the task notes. Never ask for upvotes.
+
+## Clips
+
+The owner's Codex clipping agent commits finished clips to `ops/clips/` on this branch.
+Video tasks point at the clip's raw URL there, so a task can be queued before its clip
+exists. Keep clips under 25 MB, 15–30 s, MP4.
+
+Waiting on: `ops/clips/septic-lord.mp4` (Septic Lord fight with resurrect and pickup
+healing) for task `2026-10-15-indiegames-video`.
