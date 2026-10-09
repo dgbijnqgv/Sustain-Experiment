@@ -72,3 +72,6 @@ About 1.5–2 hours:
   - School web filters may block a profane domain.
   - The kid-heavy audience brings COPPA duties.
   - Retention without friends present is unproven.
+
+**Status (2026-10-09): parked.** The owner won't spend time on shiteven, and the AI API
+isn't to be the focus. Without owner time to post or deploy, there is no viable route.

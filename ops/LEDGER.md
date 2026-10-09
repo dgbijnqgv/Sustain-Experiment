@@ -30,6 +30,10 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Log
 
+- **2026-10-09, owner decisions.** Shiteven is parked: no owner time, keep the name, no portals, and don't
+  make the AI-play API the focus. The owner is a director with little attention to spare, so messages to
+  them must be short: outcome first, at most one decision. The Metaculus bot stays the only active channel.
+
 - **2026-10-08, owner answers.** Tax residence: California, so US person. W-9, no withholding; prizes are
   ordinary income for federal and CA tax, with a 1099 likely at $600+. Rough after-tax value of the bot is
   ~$70–80/month. No downgrade. Owner flagged the opportunity cost of plan API credits and doubts the
