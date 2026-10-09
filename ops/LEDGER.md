@@ -30,6 +30,10 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Log
 
+- **2026-10-09, priority change.** For shiteven, visits come before money; the owner has no immediate need
+  for income. Listed on iogames.fun. Its free "boost" is a reciprocal text link; the owner adds it to the
+  `public/index.html` footer.
+
 - **2026-10-09, shiteven visibility.** The session's search tool found nothing, but the owner confirms Google already lists it. Sent 5 live pages to IndexNow
   (Bing, DuckDuckGo, Yandex) using the site's existing key; it accepted them (HTTP 200). The sitemap lists
   /arena, /community and /garden, which return 404; the fix needs a deploy. No Search Console step
