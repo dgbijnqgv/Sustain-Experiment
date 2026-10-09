@@ -1,0 +1,39 @@
+name: IndexNow ping
+
+# Tells Bing, DuckDuckGo (via Bing), Yandex, Seznam and Naver about a site's pages,
+# using the IndexNow key file the site already serves at its root.
+on:
+  workflow_dispatch:
+    inputs:
+      host:
+        description: Host, e.g. example.com
+        required: true
+      key:
+        description: IndexNow key (served at https://HOST/KEY.txt)
+        required: true
+      paths:
+        description: Space-separated paths
+        required: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping
+        env:
+          HOST: ${{ inputs.host }}
+          KEY: ${{ inputs.key }}
+          PATHS: ${{ inputs.paths }}
+        run: |
+          test "$(curl -sS "https://$HOST/$KEY.txt")" = "$KEY" || { echo "Key file missing or wrong"; exit 1; }
+          urls=""
+          for p in $PATHS; do
+            code="$(curl -sS -o /dev/null -w '%{http_code}' "https://$HOST$p")"
+            echo "$code https://$HOST$p"
+            [ "$code" = 200 ] && urls="$urls\"https://$HOST$p\","
+          done
+          body="{\"host\":\"$HOST\",\"key\":\"$KEY\",\"urlList\":[${urls%,}]}"
+          echo "$body"
+          curl -sS -X POST https://api.indexnow.org/indexnow -H 'Content-Type: application/json; charset=utf-8' \
+            -d "$body" -w '\nIndexNow HTTP %{http_code}\n'
