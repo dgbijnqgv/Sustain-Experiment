@@ -30,10 +30,10 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Log
 
-- **2026-10-09, shiteven visibility.** shiteven.fun was in no search index. Sent 5 live pages to IndexNow
+- **2026-10-09, shiteven visibility.** The session's search tool found nothing, but the owner confirms Google already lists it. Sent 5 live pages to IndexNow
   (Bing, DuckDuckGo, Yandex) using the site's existing key; it accepted them (HTTP 200). The sitemap lists
-  /arena, /community and /garden, which return 404; the fix needs a deploy. Google needs Search Console,
-  which only the owner can set up (~5 min, optional).
+  /arena, /community and /garden, which return 404; the fix needs a deploy. No Search Console step
+  is needed.
 
 - **2026-10-09, owner decisions.** Shiteven is parked: no owner time, keep the name, no portals, and don't
   make the AI-play API the focus. The owner is a director with little attention to spare, so messages to
