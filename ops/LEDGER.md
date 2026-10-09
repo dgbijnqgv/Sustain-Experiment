@@ -30,6 +30,10 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Log
 
+- **2026-10-09, shiteven listings.** Owner submitted to iogames.fun (with the reciprocal footer link live),
+  iogame.io (/contact) and r/playmygame. The sitemap was fixed by the owner's server-side agent.
+  r/iogames is still optional.
+
 - **2026-10-09, priority change.** For shiteven, visits come before money; the owner has no immediate need
   for income. Listed on iogames.fun. Its free "boost" is a reciprocal text link; the owner adds it to the
   `public/index.html` footer.
