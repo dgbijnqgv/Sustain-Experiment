@@ -1,1 +1,1 @@
-The player dodges bombs and battles Septic Lord in the Dung Doomsday arena. Septic Lord kills the player, and the clip ends on the death screen.
+The player dodges bomb blasts and fights Septic Lord in Dung Doomsday. The health indicator drops before the fatal hit, and the clip ends on the death screen.
