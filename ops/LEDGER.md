@@ -30,6 +30,13 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Log
 
+- **2026-10-10, waste check.** The bot ran every 15 minutes with no errors. Main tournament: 3 of 3 new questions
+  answered since launch. MiniBench: no question has opened since 2026-10-07 20:38 UTC (before launch), so it may
+  have paused or moved to a new project. The check-in routine now verifies both targets (ROUTINE step 4, using
+  `metaculus-meta.yaml`). The Fall season runs to 2027-03-05. Disabled the clip-queue routine
+  `trig_01KdBYTqvJhy1kFbnLnSAMB7` because its sessions can't push; clips are queued by hand. Ox has two video
+  posts queued: r/indiegames on Oct 10 and r/IndieDev on Oct 15.
+
 - **2026-10-09, shiteven listings.** Owner submitted to iogames.fun (with the reciprocal footer link live),
   iogame.io (/contact) and r/playmygame. The sitemap was fixed by the owner's server-side agent.
   r/iogames is still optional.

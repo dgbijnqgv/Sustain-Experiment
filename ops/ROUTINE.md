@@ -48,14 +48,22 @@ logs with the GitHub MCP tools (`actions_run_trigger`, `actions_list`,
    ledger, and compare them with last time. If main-tournament coverage of
    closed questions is below 90%, investigate missed runs. Use run timestamps,
    not forecasts. Propose an external trigger if GitHub cron is the cause.
-4. **Learning, monthly, from resolved questions only.** Once 20 or more have
+4. **Targets still current.** Run `metaculus-meta.yaml` (metadata only).
+   - If a FutureEval tournament newer than `mc.SEASON_TOURNAMENT` has started
+     (Spring 2027 is expected around January), switch `SEASON_TOURNAMENT` to
+     its slug, run the offline tests, push, and run the test workflow.
+   - If the newest MiniBench question opened more than 3 days ago, find where
+     MiniBench moved (Metaculus announcements, `forecasting-tools` releases)
+     and set the `MINIBENCH_ID` variable or ask the owner to. If MiniBench has
+     ended, set `RUN_MINIBENCH=false` so no runs are spent on it.
+5. **Learning, monthly, from resolved questions only.** Once 20 or more have
    resolved, the owner may be asked to read the bot's score on Metaculus.
    Code changes must rest on resolved questions or on bot-testing-area runs,
    never on open ones.
-5. **Optional channels.** Only after the owner has said yes in the ledger:
+6. **Optional channels.** Only after the owner has said yes in the ledger:
    - **Apify:** run `apify.yaml` stats, and `tender-feed-live-check.yaml`
      weekly.
-6. **Ledger, commit, push.**
+7. **Ledger, commit, push.**
 
 ## Backlog (Actors)
 
