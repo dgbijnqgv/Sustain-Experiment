@@ -1,0 +1,40 @@
+name: Metaculus metadata
+
+# Prints tournament metadata only (slugs, names, dates, question open/close
+# times). Never prints forecasts or comments. Used to check that the bot points
+# at the current MiniBench round and season.
+on:
+  workflow_dispatch:
+
+jobs:
+  meta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Tournaments and newest MiniBench questions
+        env:
+          TOKEN: ${{ secrets.METACULUS_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request
+          def get(path):
+              req = urllib.request.Request("https://www.metaculus.com/api" + path,
+                  headers={"Authorization": "Token " + os.environ["TOKEN"], "User-Agent": "sustain-meta"})
+              try:
+                  return json.load(urllib.request.urlopen(req, timeout=30))
+              except Exception as e:
+                  print("ERR", path, e); return None
+          t = get("/projects/tournaments/")
+          items = t if isinstance(t, list) else (t or {}).get("results", [])
+          for p in items:
+              s = (p.get("slug") or "") + " " + (p.get("name") or "")
+              if any(k in s.lower() for k in ("minibench", "futureeval", "aib")):
+                  print("TOURNAMENT", p.get("id"), p.get("slug"), "|", p.get("name"), "|",
+                        p.get("start_date"), "->", p.get("close_date"))
+          for slug in ("minibench",):
+              d = get(f"/posts/?tournaments={slug}&order_by=-open_time&limit=3")
+              for r in (d or {}).get("results", []):
+                  q = r.get("question") or {}
+                  print("POST", slug, r.get("id"), "open", q.get("open_time"), "close", q.get("scheduled_close_time"),
+                        "projects", [x.get("slug") for x in (r.get("projects") or {}).get("tournament", [])])
+          PY
