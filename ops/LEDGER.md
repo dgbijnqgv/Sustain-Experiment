@@ -30,6 +30,13 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Log
 
+- **2026-10-12 09:00 UTC, check-in.** Bot healthy: the last 100 tournament runs (Oct 11 09:00 to Oct 12 08:45)
+  all succeeded, every 15 minutes. Coverage: main 10/10 closed questions answered (100%; was 3/3); MiniBench 59
+  closed, all missed before launch (unchanged). Target `fall-futureeval-2026` is current (runs to 2027-03-05). MiniBench:
+  no question has opened since 2026-10-07 20:38 UTC (over 4 days). forecasting-tools 0.3.4, the latest, still points
+  at `minibench`, so no new location is known. Runs find nothing to answer there, so it costs no model spend;
+  `RUN_MINIBENCH` left on, and the next check-in looks again.
+
 - **2026-10-10, waste check.** The bot ran every 15 minutes with no errors. Main tournament: 3 of 3 new questions
   answered since launch. MiniBench: no question has opened since 2026-10-07 20:38 UTC (before launch), so it may
   have paused or moved to a new project. The check-in routine now verifies both targets (ROUTINE step 4, using
