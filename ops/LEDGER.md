@@ -30,6 +30,12 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Log
 
+- **2026-10-15 09:00 UTC, check-in.** Bot healthy: the last 100 tournament runs (Oct 14 09:30 to Oct 15 08:45)
+  all succeeded. Coverage, counted since the bot's first answer: main 26/26 closed questions answered (100%; was
+  10/10). MiniBench 1/1 (100%). MiniBench has resumed: question 45950 opened 2026-10-12 16:16 UTC and was answered.
+  The earlier 59 pre-launch misses are no longer counted. Target `fall-futureeval-2026` is still current.
+  No changes made.
+
 - **2026-10-14, owner: "Anthropic rejected the form".** Most likely the donated-credits request on the Metaculus
   participation form. No impact: the bot doesn't use donated credits. Verified: tournament run 38611458633
   (18:00 UTC) submitted 1 forecast with 0 failures on the plan-credits API key, with no fallback warning. The last
