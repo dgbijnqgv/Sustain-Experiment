@@ -30,6 +30,10 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Log
 
+- **2026-10-21, owner chose 1a:** the r/IndieDev task now posts the tighter `shiteven-mutant-boss-20261008` cut
+  instead of the comeback clip (same fight). If the task already ran, the edit does nothing. The owner doesn't
+  read Ox notifications, and Reddit is blocked from these sessions, so what has been posted is unknown.
+
 - **2026-10-21, owner: the phone with Ox is usually off.** Ox runs only while the phone is on, so Reddit tasks
   wait and then run together. Added `max_tasks_per_run: 1` to the inbox so Ox posts one per run. Owner decided
   to keep the repo public: no secrets or personal email in its history, and the Ox raw links and free Actions
