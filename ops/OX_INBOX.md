@@ -6,8 +6,9 @@ https://raw.githubusercontent.com/dgbijnqgv/Sustain-Experiment/claude/ai-revenue
 once a day. It runs every task whose `not_before` has passed and whose `id` it hasn't
 done yet, then notifies the owner with the resulting links.
 
-iOS decides when background runs happen, so expect a task within about a day of its
-`not_before`, not at an exact minute.
+iOS decides when background runs happen, and the phone is often off, so a task can
+run days after its `not_before`. Ox runs at most `max_tasks_per_run` tasks (1) per run, oldest
+first, so a backlog goes out one post per day instead of all at once.
 
 ## Adding a task (Claude sessions)
 

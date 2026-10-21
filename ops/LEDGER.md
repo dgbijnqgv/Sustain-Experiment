@@ -30,6 +30,11 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Log
 
+- **2026-10-21, owner: the phone with Ox is usually off.** Ox runs only while the phone is on, so Reddit tasks
+  wait and then run together. Added `max_tasks_per_run: 1` to the inbox so Ox posts one per run. Owner decided
+  to keep the repo public: no secrets or personal email in its history, and the Ox raw links and free Actions
+  minutes need it public.
+
 - **2026-10-19 09:00 UTC, check-in.** Bot healthy: the last 100 tournament runs (Oct 18 09:45 to Oct 19 08:45)
   all succeeded. Coverage, counted since the bot's first answer: main 40/40 (39 closed, 1 open; was 26/26), MiniBench
   13/13 (9 closed, 4 open; was 1/1). MiniBench is active again: three questions opened today. Target
@@ -41,8 +46,9 @@ Append-only log kept by the operator sessions, newest first.
   The earlier 59 pre-launch misses are no longer counted. Target `fall-futureeval-2026` is still current.
   No changes made.
 
-- **2026-10-14, owner: "Anthropic rejected the form".** Most likely the donated-credits request on the Metaculus
-  participation form. No impact: the bot doesn't use donated credits. Verified: tournament run 38611458633
+- **2026-10-14, owner: "Anthropic rejected the form".** The owner clarified it was the Anthropic startup
+  program application. The program favours funded companies, so a solo project doesn't qualify. No impact: the
+  bot runs on plan credits. Verified: tournament run 38611458633
   (18:00 UTC) submitted 1 forecast with 0 failures on the plan-credits API key, with no fallback warning. The last
   100 runs all succeeded.
 

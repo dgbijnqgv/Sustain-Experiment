@@ -5,6 +5,7 @@
     "reddit_post",
     "reddit_comment"
   ],
+  "max_tasks_per_run": 1,
   "tasks": [
     {
       "id": "2026-10-10-indiegames-dung-doomsday-septic-lord-20261008",
