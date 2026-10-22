@@ -31,7 +31,8 @@ Append-only log kept by the operator sessions, newest first.
 ## Log
 
 - **2026-10-22, owner: drop Reddit for now.** Emptied the Ox inbox so a backlog can't post when the phone comes on;
-  the two video tasks are parked in `ops/ox-parked.json`. Three clips stay in `ops/clips/` for later use.
+  the two video tasks are parked in `ops/ox-parked.json`. Three clips stay in `ops/clips/` for later use. Owner
+  paused the Ox-scheduled posts and the Codex clipping agent the same day.
 
 - **2026-10-22, owner checked Reddit and Ox: nothing has been published.** None of the Ox-scheduled posts
   (r/WebGames Oct 13, r/iogames Oct 20) or the inbox video tasks went out. The Reddit channel has produced zero
