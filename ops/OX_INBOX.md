@@ -1,5 +1,9 @@
 # Ox inbox
 
+**Paused since 2026-10-22.** Nothing was ever posted (Ox rarely runs because the phone is usually off), so
+the owner dropped Reddit for now. The inbox is empty; the unposted tasks are in `ops/ox-parked.json`. Don't
+queue anything until the owner restarts Reddit.
+
 `ops/ox-inbox.json` holds tasks for Ox, the agent app on the owner's phone, which is
 logged into the owner's Reddit account. An Ox scheduled skill reads the file at
 https://raw.githubusercontent.com/dgbijnqgv/Sustain-Experiment/claude/ai-revenue-generation-ume6vn/ops/ox-inbox.json

@@ -1,0 +1,27 @@
+{
+  "about": "Ox tasks parked on 2026-10-22 when Reddit was dropped. Never run. Move back into ox-inbox.json with new ids and dates if Reddit restarts.",
+  "tasks": [
+    {
+      "id": "2026-10-10-indiegames-dung-doomsday-septic-lord-20261008",
+      "not_before": "2026-10-10T04:30:00-07:00",
+      "action": "reddit_post",
+      "subreddit": "indiegames",
+      "kind": "video",
+      "video_url": "https://raw.githubusercontent.com/dgbijnqgv/Sustain-Experiment/claude/ai-revenue-generation-ume6vn/ops/clips/dung-doomsday-septic-lord-20261008.mp4",
+      "title": "Dung Doomsday in my multiplayer browser game: dodge the bombs, fight the Septic Lord (he wins this one)",
+      "body": "",
+      "first_comment": "Shiteven, a free multiplayer browser game I made solo: https://shiteven.fun (desktop and mobile, no signup). Happy to hear what felt confusing."
+    },
+    {
+      "id": "2026-10-15-indiedev-shiteven-comeback-20261008",
+      "not_before": "2026-10-15T04:30:00-07:00",
+      "action": "reddit_post",
+      "subreddit": "IndieDev",
+      "kind": "video",
+      "video_url": "https://raw.githubusercontent.com/dgbijnqgv/Sustain-Experiment/claude/ai-revenue-generation-ume6vn/ops/clips/shiteven-mutant-boss-20261008.mp4",
+      "title": "Took a legendary upgrade, then took down a mutated boss and hit level 8 in my multiplayer browser game",
+      "body": "",
+      "first_comment": "Shiteven, a free multiplayer browser game I made solo: https://shiteven.fun (desktop and mobile, no signup). Happy to hear what felt confusing."
+    }
+  ]
+}
