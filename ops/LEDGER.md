@@ -30,6 +30,11 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Log
 
+- **2026-10-22 09:00 UTC, check-in.** Bot healthy: the last 100 tournament runs (Oct 21 09:15 to Oct 22 08:45)
+  all succeeded. Coverage: main 48/48 (47 closed, 1 resolved; was 40/40); MiniBench 58/58 closed (was 13/13).
+  The newest MiniBench question opened today. Target `fall-futureeval-2026` is still current. 1 question has
+  resolved, so the learning step waits for 20. No changes made.
+
 - **2026-10-21, owner chose 1a:** the r/IndieDev task now posts the tighter `shiteven-mutant-boss-20261008` cut
   instead of the comeback clip (same fight). If the task already ran, the edit does nothing. The owner doesn't
   read Ox notifications, and Reddit is blocked from these sessions, so what has been posted is unknown.
