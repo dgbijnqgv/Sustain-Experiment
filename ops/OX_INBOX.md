@@ -49,9 +49,10 @@ instructions.
 
 ## Post log (for spacing)
 
-Posts scheduled directly in Ox, outside this inbox:
-- 2026-10-13 r/WebGames (link)
-- 2026-10-20 r/iogames
+Posts scheduled directly in Ox, outside this inbox (as of 2026-10-22 none had been published,
+so these subreddits are still unused this month):
+- 2026-10-13 r/WebGames (link), not published
+- 2026-10-20 r/iogames, not published
 - 2026-10-22 r/IndieGaming
 
 Earlier, by the owner: r/playmygame (Oct 2026).

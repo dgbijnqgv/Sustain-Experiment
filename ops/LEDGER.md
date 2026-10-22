@@ -30,6 +30,12 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Log
 
+- **2026-10-22, owner checked Reddit and Ox: nothing has been published.** None of the Ox-scheduled posts
+  (r/WebGames Oct 13, r/iogames Oct 20) or the inbox video tasks went out. The Reddit channel has produced zero
+  in two weeks. Likely cause: Ox only runs while the phone is on, and it usually isn't. Not yet confirmed that Ox
+  can post at all. Lesson: I logged the scheduled posts as if they would happen and never checked that one had
+  actually gone out.
+
 - **2026-10-22 09:00 UTC, check-in.** Bot healthy: the last 100 tournament runs (Oct 21 09:15 to Oct 22 08:45)
   all succeeded. Coverage: main 48/48 (47 closed, 1 resolved; was 40/40); MiniBench 58/58 closed (was 13/13).
   The newest MiniBench question opened today. Target `fall-futureeval-2026` is still current. 1 question has
