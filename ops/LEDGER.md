@@ -30,6 +30,11 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Log
 
+- **2026-10-26 09:00 UTC, check-in.** Bot healthy: the last 100 tournament runs (Oct 25 09:30 to Oct 26 08:45)
+  all succeeded. Coverage: main 63/63 (62 closed, 1 resolved; was 48/48); MiniBench 60/60 closed (was 58/58). The
+  newest MiniBench question opened today. Target `fall-futureeval-2026` is still current. 1 question has resolved;
+  the learning step waits for 20. No changes made.
+
 - **2026-10-22, owner: drop Reddit for now.** Emptied the Ox inbox so a backlog can't post when the phone comes on;
   the two video tasks are parked in `ops/ox-parked.json`. Three clips stay in `ops/clips/` for later use. Owner
   paused the Ox-scheduled posts and the Codex clipping agent the same day.
