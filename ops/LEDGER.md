@@ -18,6 +18,8 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Blocked
 
+- **Bot stopped by owner 2026-10-26.** Optional cleanup for the owner: delete the cron-job.org job and set
+  `BOT_ENABLED=false`. Until then, the external trigger keeps starting runs that are skipped at no cost.
 - Nothing. Waiting on the owner only for: yes/no to CrunchDAO (recommended: no)
   and the tender feed; and how much weekly time they can give to a
   human-in-the-loop channel, if any.
@@ -29,6 +31,11 @@ Append-only log kept by the operator sessions, newest first.
 - ~~Downgrade to Max 5x and run the bot~~: declined by owner 2026-10-08 (stays on Max 20x).
 
 ## Log
+
+- **2026-10-26, owner: stop the bot.** At API prices the bot loses money: ~240 questions/month x $0.60-0.85
+  = ~$145-205/month of tokens against ~$105/month of expected prize. Main alone is ~$79 of tokens against ~$67 of
+  prize. The tournament job is now hard-disabled (`if: false`) in `forecast-bot-tournament.yaml`. The forecasts
+  already submitted stay in the Fall tournament and can still score.
 
 - **2026-10-26 09:00 UTC, check-in.** Bot healthy: the last 100 tournament runs (Oct 25 09:30 to Oct 26 08:45)
   all succeeded. Coverage: main 63/63 (62 closed, 1 resolved; was 48/48); MiniBench 60/60 closed (was 58/58). The

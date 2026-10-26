@@ -30,6 +30,9 @@ logs with the GitHub MCP tools (`actions_run_trigger`, `actions_list`,
 
 ## Each session, in order
 
+> **Bot stopped by the owner on 2026-10-26** (token cost exceeds expected prize). Skipped tournament runs are
+> expected, not a pending setup. Don't restart the bot, and skip steps 1-4 unless the owner restarts it.
+
 1. **Setup detection.** List recent runs of `forecast-bot-tournament.yaml`.
    - **Jobs skipped:** `BOT_ENABLED` is unset, so setup is still pending. Note
      it under *Blocked* and stop.

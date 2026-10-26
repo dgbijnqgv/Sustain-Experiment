@@ -21,9 +21,9 @@ jobs:
   forecast:
     runs-on: ubuntu-latest
     timeout-minutes: 28
-    # Off until the owner sets the repository variable BOT_ENABLED=true (skipped
-    # jobs cost no Actions minutes); set it to anything else to pause the bot.
-    if: vars.BOT_ENABLED == 'true'
+    # Stopped by the owner on 2026-10-26: at API prices the tokens cost more than
+    # the expected prize. To restart, change `false` back to `true`.
+    if: false && vars.BOT_ENABLED == 'true'
     defaults:
       run:
         working-directory: forecast-bot
