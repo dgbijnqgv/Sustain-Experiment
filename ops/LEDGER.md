@@ -32,6 +32,8 @@ Append-only log kept by the operator sessions, newest first.
 
 ## Log
 
+- **2026-10-26, owner: turn off check-ins.** Disabled the "Sustain operator check-in" scheduled task (Mon/Thu).
+
 - **2026-10-26, owner: stop the bot.** At API prices the bot loses money: ~240 questions/month x $0.60-0.85
   = ~$145-205/month of tokens against ~$105/month of expected prize. Main alone is ~$79 of tokens against ~$67 of
   prize. The tournament job is now hard-disabled (`if: false`) in `forecast-bot-tournament.yaml`. The forecasts
